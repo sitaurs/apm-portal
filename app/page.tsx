@@ -31,15 +31,22 @@ async function getLomba() {
     const params = new URLSearchParams();
     params.set('limit', '4');
     params.set('sort', '-is_urgent,-date_created');
-    params.set('filter', JSON.stringify({ status: { _neq: 'closed' } }));
+    // Remove strict status filter - allow all non-closed statuses or just fetch all
     params.set('fields', 'id,nama_lomba,slug,deadline,kategori,tingkat,status,biaya,is_urgent,is_featured');
 
-    const res = await fetch(`${DIRECTUS_URL}/items/apm_lomba?${params.toString()}`, {
+    const url = `${DIRECTUS_URL}/items/apm_lomba?${params.toString()}`;
+    console.log('Fetching lomba from:', url);
+
+    const res = await fetch(url, {
       next: { revalidate: 60 },
     });
 
-    if (!res.ok) return [];
+    if (!res.ok) {
+      console.error(`Failed to fetch lomba: ${res.status} from ${url}`);
+      return [];
+    }
     const data = await res.json();
+    console.log(`Fetched ${data.data?.length || 0} lomba items`);
 
     return (data.data || []).map((item: Record<string, unknown>) => ({
       id: String(item.id),
@@ -63,28 +70,25 @@ async function getLomba() {
 
 async function getPrestasi() {
   try {
-    // Calculate 7 days ago for "Prestasi Minggu Ini" widget
-    const sevenDaysAgo = new Date();
-    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-    const sevenDaysAgoStr = sevenDaysAgo.toISOString().split('T')[0];
-
     const params = new URLSearchParams();
     params.set('limit', '3');
-    params.set('sort', '-verified_at');
-    params.set('filter', JSON.stringify({
-      _and: [
-        { status_verifikasi: { _eq: 'verified' } },
-        { verified_at: { _gte: sevenDaysAgoStr } },
-      ]
-    }));
-    params.set('fields', 'id,judul,slug,nama_lomba,peringkat,tingkat,tahun,kategori,verified_at');
+    params.set('sort', '-date_created');
+    // Relaxed filter - show all prestasi for now (status_verifikasi can be verified later)
+    params.set('fields', 'id,judul,slug,nama_lomba,peringkat,tingkat,tahun,kategori,verified_at,status_verifikasi');
 
-    const res = await fetch(`${DIRECTUS_URL}/items/apm_prestasi?${params.toString()}`, {
+    const url = `${DIRECTUS_URL}/items/apm_prestasi?${params.toString()}`;
+    console.log('Fetching prestasi from:', url);
+
+    const res = await fetch(url, {
       next: { revalidate: 60 },
     });
 
-    if (!res.ok) return [];
+    if (!res.ok) {
+      console.error(`Failed to fetch prestasi: ${res.status} from ${url}`);
+      return [];
+    }
     const data = await res.json();
+    console.log(`Fetched ${data.data?.length || 0} prestasi items`);
 
     return (data.data || []).map((item: Record<string, unknown>) => ({
       id: String(item.id),
@@ -106,16 +110,23 @@ async function getExpo() {
   try {
     const params = new URLSearchParams();
     params.set('limit', '3');
-    params.set('sort', 'tanggal_mulai');
-    params.set('filter', JSON.stringify({ status: { _eq: 'upcoming' } }));
-    params.set('fields', 'id,nama_event,slug,tanggal_mulai,tanggal_selesai,lokasi');
+    params.set('sort', '-date_created');
+    // Relaxed filter - show all expo for now
+    params.set('fields', 'id,nama_event,slug,tanggal_mulai,tanggal_selesai,lokasi,status');
 
-    const res = await fetch(`${DIRECTUS_URL}/items/apm_expo?${params.toString()}`, {
+    const url = `${DIRECTUS_URL}/items/apm_expo?${params.toString()}`;
+    console.log('Fetching expo from:', url);
+
+    const res = await fetch(url, {
       next: { revalidate: 60 },
     });
 
-    if (!res.ok) return [];
+    if (!res.ok) {
+      console.error(`Failed to fetch expo: ${res.status} from ${url}`);
+      return [];
+    }
     const data = await res.json();
+    console.log(`Fetched ${data.data?.length || 0} expo items`);
 
     const formatTanggal = (start: string, end?: string) => {
       const startDate = new Date(start);
