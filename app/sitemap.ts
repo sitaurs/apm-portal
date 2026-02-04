@@ -1,50 +1,51 @@
 ﻿import { MetadataRoute } from 'next';
+import { prisma } from '@/lib/prisma/client';
 
-const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://apm-portal.id';
-const API_BASE = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
+const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://apm.fix.web.id';
 
 async function fetchDynamicRoutes() {
   try {
-    // Fetch all lomba slugs from internal API
-    const lombaRes = await fetch(`${API_BASE}/api/lomba?limit=1000`, {
-      next: { revalidate: 3600 },
-    });
-    const lombaData = await lombaRes.json();
-    const lombaPages = (lombaData.data || []).map((item: any) => ({
+    // Direct database access for build-time sitemap generation
+    const [lombaData, prestasiData, expoData] = await Promise.all([
+      prisma.lomba.findMany({
+        where: { status: 'published' },
+        select: { slug: true, updated_at: true },
+        take: 1000,
+      }),
+      prisma.prestasi.findMany({
+        where: { status: 'published' },
+        select: { slug: true, updated_at: true },
+        take: 1000,
+      }),
+      prisma.expo.findMany({
+        where: { status: 'published' },
+        select: { slug: true, updated_at: true },
+        take: 1000,
+      }),
+    ]);
+
+    const lombaPages = lombaData.map((item) => ({
       url: `${baseUrl}/lomba/${item.slug}`,
-      lastModified: new Date(),
+      lastModified: item.updated_at || new Date(),
       changeFrequency: 'weekly' as const,
       priority: 0.7,
     }));
 
-    // Fetch all prestasi slugs from internal API
-    const prestasiRes = await fetch(`${API_BASE}/api/prestasi?limit=1000`, {
-      next: { revalidate: 3600 },
-    });
-    const prestasiData = await prestasiRes.json();
-    const prestasiPages = (prestasiData.data || []).map((item: any) => ({
+    const prestasiPages = prestasiData.map((item) => ({
       url: `${baseUrl}/prestasi/${item.slug}`,
-      lastModified: new Date(),
+      lastModified: item.updated_at || new Date(),
       changeFrequency: 'monthly' as const,
       priority: 0.6,
     }));
 
-    // Fetch all expo slugs from internal API
-    const expoRes = await fetch(`${API_BASE}/api/expo?limit=1000`, {
-      next: { revalidate: 3600 },
-    });
-    const expoData = await expoRes.json();
-    const expoPages = (expoData.data || []).map((item: any) => ({
+    const expoPages = expoData.map((item) => ({
       url: `${baseUrl}/expo/${item.slug}`,
-      lastModified: new Date(),
+      lastModified: item.updated_at || new Date(),
       changeFrequency: 'weekly' as const,
       priority: 0.7,
     }));
 
-    // Resources are still managed externally (CMS)
-    const resourcePages: MetadataRoute.Sitemap = [];
-
-    return [...lombaPages, ...prestasiPages, ...expoPages, ...resourcePages];
+    return [...lombaPages, ...prestasiPages, ...expoPages];
   } catch (error) {
     console.error('Error fetching dynamic routes for sitemap:', error);
     return [];
