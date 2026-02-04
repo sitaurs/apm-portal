@@ -32,6 +32,8 @@ function getPool(): pg.Pool {
 
   const connectionString = process.env.DATABASE_URL
   if (!connectionString) {
+    // During build time, DATABASE_URL might not be available
+    // This will only throw error when actually trying to query
     throw new Error('DATABASE_URL environment variable is not set')
   }
 
@@ -55,18 +57,38 @@ function createPrismaClient(): PrismaClient {
 }
 
 /**
- * Get or create the PrismaClient singleton instance
+ * Get or create the PrismaClient singleton instance (lazy initialization)
  * 
  * In development, we store the client in the global object to prevent
  * creating a new connection pool on every hot reload.
  * 
  * In production, we create a new client instance.
  */
-export const prisma = globalThis.prisma ?? createPrismaClient()
+function getPrismaClient(): PrismaClient {
+  if (globalThis.prisma) {
+    return globalThis.prisma
+  }
+
+  const client = createPrismaClient()
+  
+  if (process.env.NODE_ENV !== 'production') {
+    globalThis.prisma = client
+  }
+
+  return client
+}
+
+// Export lazy-initialized prisma client
+export const prisma = new Proxy({} as PrismaClient, {
+  get(target, prop) {
+    const client = getPrismaClient()
+    return client[prop as keyof PrismaClient]
+  }
+})
 
 // Prevent multiple instances in development
-if (process.env.NODE_ENV !== 'production') {
-  globalThis.prisma = prisma
+if (process.env.NODE_ENV !== 'production' && globalThis.prisma) {
+  // Already initialized in global, reuse it
 }
 
 /**
