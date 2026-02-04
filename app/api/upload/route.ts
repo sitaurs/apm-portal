@@ -1,22 +1,19 @@
 /**
  * File Upload API
  * 
- * POST /api/upload - Upload files (images, documents)
+ * POST /api/upload - Upload files to Cloudinary
  * 
  * Supports:
  * - Single file upload
  * - Multiple files upload (use 'files' field)
  * - Images (poster, gallery): max 5MB
  * - Documents (PDF, DOC): max 10MB
- * - Subdirectories: lomba, expo, prestasi, general
+ * - Categories: lomba, expo, prestasi, general
  */
 
 import { NextRequest, NextResponse } from 'next/server'
-import { writeFile, mkdir } from 'fs/promises'
-import { existsSync } from 'fs'
-import path from 'path'
-import { v4 as uuidv4 } from 'uuid'
 import { requireAuth } from '@/lib/auth/jwt'
+import { uploadToCloudinary } from '@/lib/cloudinary'
 import {
   successResponse,
   errorResponse,
@@ -39,10 +36,11 @@ interface UploadResult {
   url: string;
   size: number;
   type: string;
+  publicId: string;
 }
 
 /**
- * Process and save a single file
+ * Process and upload a single file to Cloudinary
  */
 async function processFile(file: File, category: string): Promise<UploadResult> {
   // Validate file type
@@ -59,37 +57,20 @@ async function processFile(file: File, category: string): Promise<UploadResult> 
     throw new Error(`File too large. Max size: ${maxSize / 1024 / 1024}MB`)
   }
 
-  // Generate unique filename
-  const ext = path.extname(file.name) || (isImage ? '.jpg' : '.pdf')
-  const filename = `${uuidv4()}${ext}`
-  
-  // Determine upload directory
-  const uploadDir = path.join(
-    process.cwd(),
-    'public',
-    'uploads',
-    category
-  )
-
-  // Create directory if not exists
-  if (!existsSync(uploadDir)) {
-    await mkdir(uploadDir, { recursive: true })
-  }
-
-  // Save file
-  const filePath = path.join(uploadDir, filename)
+  // Convert file to buffer
   const bytes = await file.arrayBuffer()
   const buffer = Buffer.from(bytes)
-  await writeFile(filePath, buffer)
 
-  // Generate public URL
-  const publicUrl = `/uploads/${category}/${filename}`
+  // Upload to Cloudinary
+  const resourceType = isImage ? 'image' : 'raw'
+  const result = await uploadToCloudinary(buffer, category, resourceType)
 
   return {
-    filename,
-    url: publicUrl,
+    filename: file.name,
+    url: result.url,
     size: file.size,
     type: file.type,
+    publicId: result.publicId,
   }
 }
 

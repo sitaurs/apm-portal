@@ -15,9 +15,7 @@ import {
   successResponse,
 } from '@/lib/api/helpers'
 import { submissionRateLimiter, getClientIP } from '@/lib/rate-limit'
-import { writeFile, mkdir } from 'fs/promises'
-import { existsSync } from 'fs'
-import path from 'path'
+import { uploadToCloudinary } from '@/lib/cloudinary'
 import { v4 as uuidv4 } from 'uuid'
 
 /**
@@ -91,20 +89,13 @@ export async function POST(request: NextRequest) {
         }]
       }
       
-      // Handle file uploads
-      const uploadsDir = path.join(process.cwd(), 'public', 'uploads', 'prestasi')
-      if (!existsSync(uploadsDir)) {
-        await mkdir(uploadsDir, { recursive: true })
-      }
-      
+      // Handle file uploads to Cloudinary
       const sertifikat = formData.get('sertifikat') as File | null
       if (sertifikat && sertifikat.size > 0) {
-        const ext = sertifikat.name.split('.').pop()
-        const fileName = `sertifikat-${uuidv4()}.${ext}`
-        const filePath = path.join(uploadsDir, fileName)
         const bytes = await sertifikat.arrayBuffer()
-        await writeFile(filePath, Buffer.from(bytes))
-        sertifikatPath = `/uploads/prestasi/${fileName}`
+        const buffer = Buffer.from(bytes)
+        const result = await uploadToCloudinary(buffer, 'prestasi/sertifikat', 'raw')
+        sertifikatPath = result.url
       }
       
       // Handle dokumentasi URLs (already uploaded via ImageUpload component)
@@ -124,12 +115,10 @@ export async function POST(request: NextRequest) {
       for (let i = 0; i < 10; i++) {
         const dok = formData.get(`dokumentasi_${i}`) as File | null
         if (dok && dok.size > 0) {
-          const ext = dok.name.split('.').pop()
-          const fileName = `dok-${uuidv4()}.${ext}`
-          const filePath = path.join(uploadsDir, fileName)
           const bytes = await dok.arrayBuffer()
-          await writeFile(filePath, Buffer.from(bytes))
-          dokumentasiPaths.push(`/uploads/prestasi/${fileName}`)
+          const buffer = Buffer.from(bytes)
+          const result = await uploadToCloudinary(buffer, 'prestasi/dokumentasi', 'image')
+          dokumentasiPaths.push(result.url)
         }
       }
       
@@ -151,12 +140,10 @@ export async function POST(request: NextRequest) {
       // Handle legacy surat keterangan format
       const suratKeterangan = formData.get('suratKeterangan') as File | null
       if (suratKeterangan && suratKeterangan.size > 0) {
-        const ext = suratKeterangan.name.split('.').pop()
-        const fileName = `surat-${uuidv4()}.${ext}`
-        const filePath = path.join(uploadsDir, fileName)
         const bytes = await suratKeterangan.arrayBuffer()
-        await writeFile(filePath, Buffer.from(bytes))
-        suratPath = `/uploads/prestasi/${fileName}`
+        const buffer = Buffer.from(bytes)
+        const result = await uploadToCloudinary(buffer, 'prestasi/surat', 'raw')
+        suratPath = result.url
       }
       
       // Store surat pendukung items for later use

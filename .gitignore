@@ -48,3 +48,9 @@ logs
 Thumbs.db
 
 /lib/generated/prisma
+
+# Uploaded files (now using Cloudinary)
+/public/uploads/lomba/*
+/public/uploads/prestasi/*
+!/public/uploads/lomba/.gitkeep
+!/public/uploads/prestasi/.gitkeep

@@ -58,7 +58,7 @@ npm install -g vercel
 
 ### 2. Login
 ```bash
-vercel login
+http://localhost:3000/
 ```
 
 ### 3. Deploy

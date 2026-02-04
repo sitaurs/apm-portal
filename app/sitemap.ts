@@ -13,7 +13,7 @@ async function fetchDynamicRoutes() {
         take: 1000,
       }),
       prisma.prestasi.findMany({
-        where: { status: 'published' },
+        where: { is_published: true },
         select: { slug: true, updated_at: true },
         take: 1000,
       }),
