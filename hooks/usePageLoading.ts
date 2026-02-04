@@ -1,12 +1,11 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { usePathname, useSearchParams } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 
 export function usePageLoading() {
   const [isLoading, setIsLoading] = useState(false);
   const pathname = usePathname();
-  const searchParams = useSearchParams();
 
   useEffect(() => {
     // Set loading saat route berubah
@@ -18,7 +17,7 @@ export function usePageLoading() {
     }, 500); // Delay minimal untuk smooth UX
 
     return () => clearTimeout(timeout);
-  }, [pathname, searchParams]);
+  }, [pathname]);
 
   return isLoading;
 }

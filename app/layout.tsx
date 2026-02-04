@@ -2,6 +2,10 @@ import type { Metadata } from 'next';
 import './globals.css';
 import { ConditionalLayout } from '@/components/layout/ConditionalLayout';
 
+// Force dynamic rendering for all pages
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export const metadata: Metadata = {
   title: {
     default: 'APM Portal - Ajang Prestasi Mahasiswa',
