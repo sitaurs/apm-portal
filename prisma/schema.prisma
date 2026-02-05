@@ -67,10 +67,15 @@ model Lomba {
   kontak_panitia      Json?     // {email, phone, website}
 
   // Display
-  poster              String?   // File path/URL
+  thumbnail           String?   // Thumbnail for list/card view (recommended 16:9, 800x450)
+  poster              String?   // Main poster URL (kept for backward compatibility)
+  posters             String[]  // Multiple posters/flyers array
   tags                Json?     // Array of tags
   is_featured         Boolean   @default(false)
   is_urgent           Boolean   @default(false)
+
+  // Additional dynamic fields
+  additional_fields   Json?     // Array of {label: string, value: string}
 
   // Status
   status              String    @default("draft") // draft, open, closed
@@ -336,7 +341,7 @@ model Prestasi {
   updated_at          DateTime  @updatedAt
 
   // Relations
-  submission          PrestasiSubmission @relation(fields: [submission_id], references: [id])
+  submission          PrestasiSubmission @relation(fields: [submission_id], references: [id], onDelete: Cascade)
 
   @@index([slug])
   @@index([tahun])

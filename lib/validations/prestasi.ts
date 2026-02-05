@@ -188,3 +188,64 @@ export const querySubmissionsSchema = z.object({
 })
 
 export type QuerySubmissionsParams = z.infer<typeof querySubmissionsSchema>
+
+// ================================
+// Admin Direct Create Prestasi Schema
+// ================================
+
+export const createPrestasiDirectSchema = z.object({
+  // Required fields
+  judul: z.string()
+    .min(5, 'Judul minimal 5 karakter')
+    .max(300, 'Judul maksimal 300 karakter'),
+  nama_lomba: z.string()
+    .min(3, 'Nama lomba minimal 3 karakter')
+    .max(200, 'Nama lomba maksimal 200 karakter'),
+  tingkat: tingkatEnum,
+  peringkat: z.union([
+    peringkatEnum, 
+    z.string().min(2, 'Peringkat minimal 2 karakter')
+  ]),
+  tahun: z.number()
+    .min(2000, 'Tahun minimal 2000')
+    .max(2100, 'Tahun maksimal 2100'),
+  
+  // Optional fields
+  penyelenggara: z.string().optional(),
+  tanggal: optionalDateSchema,
+  kategori: z.string().optional(),
+  deskripsi: z.string().optional(),
+  
+  // Media (Cloudinary URLs)
+  thumbnail: z.string()
+    .url('Thumbnail harus berupa URL valid')
+    .regex(/res\.cloudinary\.com/, 'Thumbnail harus dari Cloudinary'),
+  galeri: z.array(z.string().url('Galeri harus berupa URL valid'))
+    .max(10, 'Maksimal 10 foto galeri')
+    .optional(),
+  sertifikat: z.string().url('Sertifikat harus berupa URL valid').optional(),
+  sertifikat_public: z.boolean().default(false),
+  
+  // Links
+  link_berita: z.string().url('Link berita harus berupa URL valid').optional(),
+  link_portofolio: z.string().url('Link portofolio harus berupa URL valid').optional(),
+  
+  // Display settings
+  is_featured: z.boolean().default(false),
+  is_published: z.boolean().default(true),
+  
+  // Relations (optional)
+  team_members: z.array(teamMemberSchema).optional(),
+  pembimbing: z.array(pembimbingSchema).optional(),
+  documents: z.array(z.object({
+    type: documentTypeEnum,
+    label: z.string().optional(),
+    file_path: z.string().url(),
+    file_name: z.string(),
+  })).optional(),
+  
+  // Calendar integration
+  add_to_calendar: z.boolean().default(false),
+})
+
+export type CreatePrestasiDirectInput = z.infer<typeof createPrestasiDirectSchema>

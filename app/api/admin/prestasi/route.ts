@@ -19,6 +19,10 @@ import {
   validationErrorFromZod,
 } from '@/lib/api/helpers'
 
+// Force dynamic rendering - no caching
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
+
 /**
  * GET /api/admin/prestasi
  * List all prestasi submissions with pagination and filtering
@@ -115,6 +119,10 @@ export async function GET(request: NextRequest) {
         documents: {
           select: { id: true, type: true, file_path: true, file_name: true },
         },
+        // Include published prestasi data
+        published: {
+          select: { id: true, slug: true, is_published: true },
+        },
       },
     })
 
@@ -159,6 +167,10 @@ export async function GET(request: NextRequest) {
         teamMembers: item.team_members,
         pembimbing: item.pembimbing,
         documents: item.documents,
+        // Published prestasi info
+        isPublished: item.published?.is_published || false,
+        publishedPrestasiId: item.published?.id || null,
+        slug: item.published?.slug || null,
       };
     })
 

@@ -87,6 +87,9 @@ export async function GET(request: NextRequest) {
       is_featured: item.is_featured,
       is_urgent: item.is_urgent,
       poster: item.poster,
+      thumbnail: item.thumbnail, // NEW: 16:9 thumbnail for cards
+      posters: item.posters, // NEW: Multiple posters array
+      additional_fields: item.additional_fields, // NEW: Dynamic fields
       created_at: item.created_at,
       updated_at: item.updated_at,
       registration_count: item._count.registrations,
@@ -173,6 +176,12 @@ export async function POST(request: NextRequest) {
         kontak_panitia: body.kontak_panitia || null,
         // Map API field to DB field
         poster: body.poster_url || body.poster || null,
+        // NEW: Support thumbnail for list/card view (16:9 aspect ratio)
+        thumbnail: body.thumbnail || null,
+        // NEW: Support multiple posters/flyers as array
+        posters: body.posters || [],
+        // NEW: Support dynamic additional fields [{label, value}]
+        additional_fields: body.additional_fields || null,
         tags: body.tags || null,
         status: body.status || 'draft',
         is_featured: body.is_featured || false,

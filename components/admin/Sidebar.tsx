@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { useState } from 'react';
 import {
   LayoutDashboard,
@@ -12,6 +12,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Settings,
+  LogOut,
 } from 'lucide-react';
 
 interface NavItem {
@@ -50,7 +51,13 @@ const navItems: NavItem[] = [
 
 export function Sidebar() {
   const pathname = usePathname();
+  const router = useRouter();
   const [collapsed, setCollapsed] = useState(false);
+
+  const handleLogout = () => {
+    // Direct navigation to logout endpoint - server will clear cookies and redirect
+    window.location.href = '/api/admin/logout';
+  };
 
   return (
     <>
@@ -115,6 +122,20 @@ export function Sidebar() {
             })}
           </ul>
         </nav>
+
+        {/* Logout Button */}
+        <div className="p-3 border-t border-blue-400/20">
+          <button
+            onClick={handleLogout}
+            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl bg-white/10 hover:bg-white/20 transition-all text-white hover:text-red-300 ${
+              collapsed ? 'justify-center' : ''
+            }`}
+            title="Logout"
+          >
+            <LogOut className="w-5 h-5" />
+            {!collapsed && <span className="font-medium">Logout</span>}
+          </button>
+        </div>
 
         {/* Collapse Button */}
         <div className="p-3 border-t border-blue-400/20">

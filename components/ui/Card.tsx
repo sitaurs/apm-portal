@@ -44,7 +44,8 @@ export interface LombaCardProps {
   tingkat: string;
   status: 'open' | 'closed' | 'coming-soon';
   image?: string;
-  posterUrl?: string | null;
+  thumbnail?: string | null;  // NEW: Prioritize thumbnail for list/card view (16:9)
+  posterUrl?: string | null;  // Fallback to poster
   isUrgent?: boolean;
   isFree?: boolean;
 }
@@ -58,11 +59,13 @@ const LombaCard = ({
   tingkat,
   status,
   image,
+  thumbnail,
   posterUrl,
   isUrgent,
   isFree,
 }: LombaCardProps) => {
-  const imageUrl = image || posterUrl;
+  // Prioritize: image prop > thumbnail > posterUrl > fallback
+  const imageUrl = image || thumbnail || posterUrl;
   return (
     <Card className="flex flex-col h-full">
       {/* Image */}

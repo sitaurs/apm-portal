@@ -63,37 +63,72 @@ export async function GET(request: NextRequest) {
     ])
 
     // Transform data for frontend compatibility
-    const data = prestasiList.map((item) => ({
-      id: item.id,
-      slug: item.slug,
-      title: item.judul,
-      judul: item.judul,
-      namaLomba: item.nama_lomba,
-      nama_lomba: item.nama_lomba,
-      peringkat: item.peringkat,
-      tingkat: item.tingkat.charAt(0).toUpperCase() + item.tingkat.slice(1),
-      tahun: item.tahun.toString(),
-      kategori: item.kategori || '',
-      deskripsi: item.deskripsi || '',
-      isVerified: true, // All published prestasi are verified
-      isFeatured: item.is_featured,
-      thumbnailUrl: item.thumbnail || null,
-      galeri: item.galeri,
-      sertifikatUrl: item.sertifikat_public ? item.sertifikat : null,
-      linkBerita: item.link_berita || null,
-      linkPortofolio: item.link_portofolio || null,
-      publishedAt: item.published_at.toISOString(),
-      // Include submission details if loaded
-      ...((item as any).submission ? {
-        submission: {
-          penyelenggara: (item as any).submission.penyelenggara,
-          tanggal: (item as any).submission.tanggal?.toISOString(),
-          team_members: (item as any).submission.team_members,
-          pembimbing: (item as any).submission.pembimbing,
-          documents: (item as any).submission.documents,
-        },
-      } : {}),
-    }))
+    const data = prestasiList.map((item) => {
+      const submission = (item as any).submission
+      
+      return {
+        id: item.id,
+        slug: item.slug,
+        title: item.judul,
+        judul: item.judul,
+        namaLomba: item.nama_lomba,
+        nama_lomba: item.nama_lomba,
+        peringkat: item.peringkat,
+        tingkat: item.tingkat.charAt(0).toUpperCase() + item.tingkat.slice(1),
+        tahun: item.tahun.toString(),
+        kategori: item.kategori || '',
+        deskripsi: item.deskripsi || '',
+        isVerified: true, // All published prestasi are verified
+        isFeatured: item.is_featured,
+        thumbnailUrl: item.thumbnail || null,
+        galeri: item.galeri,
+        sertifikatUrl: item.sertifikat_public ? item.sertifikat : null,
+        linkBerita: item.link_berita || null,
+        linkPortofolio: item.link_portofolio || null,
+        publishedAt: item.published_at.toISOString(),
+        
+        // Map submission data for detail page
+        penyelenggara: submission?.penyelenggara || null,
+        tanggal_lomba: submission?.tanggal?.toISOString() || null,
+        lokasi: null, // Not in schema
+        
+        // Team members with proper formatting
+        tim_mahasiswa: submission?.team_members?.map((member: any) => ({
+          nama: member.nama,
+          nim: member.nim,
+          prodi: member.prodi || '',
+          angkatan: member.angkatan || '',
+          whatsapp: member.whatsapp || '',
+          role: member.is_ketua ? 'Ketua Tim' : 'Anggota Tim',
+        })) || [],
+        
+        // Pembimbing data
+        pembimbing_data: submission?.pembimbing?.[0] ? {
+          nama: submission.pembimbing[0].nama,
+          nidn: submission.pembimbing[0].nidn || '',
+          whatsapp: submission.pembimbing[0].whatsapp || '',
+        } : null,
+        
+        // Extract fakultas/prodi from first team member
+        fakultas: submission?.team_members?.[0]?.prodi?.includes('Fakultas') 
+          ? submission.team_members[0].prodi.split(' - ')[0] 
+          : 'Belum diisi',
+        prodi: submission?.team_members?.[0]?.prodi || 'Belum diisi',
+        
+        // Documents/sertifikat as dokumentasi_files
+        dokumentasi_files: submission?.documents?.filter((doc: any) => doc.type === 'dokumentasi').map((doc: any) => doc.file_path) || [],
+        sertifikat_file: submission?.documents?.find((doc: any) => doc.type === 'sertifikat')?.file_path || item.sertifikat,
+        
+        // Hadiah - not in schema, leave empty
+        hadiah_data: null,
+        
+        // Proyek data - not in schema
+        proyek_data: null,
+        
+        // Sumber berita
+        sumber_berita: item.link_berita || '',
+      }
+    })
 
     return NextResponse.json({
       success: true,

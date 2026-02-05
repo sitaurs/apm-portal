@@ -1,33 +1,38 @@
 ﻿import { NextRequest, NextResponse } from 'next/server';
+import { AUTH_COOKIE_NAME, LEGACY_COOKIE_NAME } from '@/lib/auth/jwt';
 
 export async function POST(request: NextRequest) {
-  const res = NextResponse.json({ success: true });
+  console.log('[Logout] Clearing cookies...');
   
-  // Clear all auth cookies
-  res.cookies.set('admin_token', '', {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax',
-    maxAge: 0,
-    path: '/',
-  });
+  const res = NextResponse.json({ success: true, message: 'Logged out successfully' });
+  
+  // Clear the main auth cookie (apm_auth_token)
+  res.cookies.delete(AUTH_COOKIE_NAME);
+  
+  // Clear legacy cookie (admin_token)
+  res.cookies.delete(LEGACY_COOKIE_NAME);
 
-  res.cookies.set('admin_refresh_token', '', {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax',
-    maxAge: 0,
-    path: '/',
-  });
+  // Clear any other auth-related cookies
+  res.cookies.delete('admin_refresh_token');
+  res.cookies.delete('admin_auth');
 
-  res.cookies.set('admin_auth', '', {
-    httpOnly: false,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax',
-    maxAge: 0,
-    path: '/',
-  });
+  console.log('[Logout] All auth cookies cleared');
+  return res;
+}
 
+// Also support GET for simple logout links
+export async function GET(request: NextRequest) {
+  console.log('[Logout GET] Clearing cookies and redirecting...');
+  
+  const res = NextResponse.redirect(new URL('/admin/login', request.url));
+  
+  // Clear all cookies
+  res.cookies.delete(AUTH_COOKIE_NAME);
+  res.cookies.delete(LEGACY_COOKIE_NAME);
+  res.cookies.delete('admin_refresh_token');
+  res.cookies.delete('admin_auth');
+
+  console.log('[Logout GET] Cookies cleared, redirecting to login');
   return res;
 }
 

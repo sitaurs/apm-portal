@@ -49,6 +49,10 @@ export const mainNavigation = [
     ],
   },
   {
+    name: 'Kalender',
+    href: '/kalender',
+  },
+  {
     name: 'Resources',
     href: '/resources',
     submenu: [

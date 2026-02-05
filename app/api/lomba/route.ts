@@ -70,6 +70,7 @@ export async function GET(request: NextRequest) {
       kategori: item.kategori,
       tingkat: item.tingkat.charAt(0).toUpperCase() + item.tingkat.slice(1),
       deadline: item.deadline?.toISOString() || null,
+      deadlineDisplay: item.deadline ? new Date(item.deadline).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) : '-',
       lokasi: item.lokasi || '',
       biaya: item.biaya,
       isFree: item.biaya === 0,
@@ -77,6 +78,9 @@ export async function GET(request: NextRequest) {
       isUrgent: item.is_urgent,
       status: item.status,
       posterUrl: item.poster || null,
+      thumbnail: item.thumbnail || null,
+      posters: item.posters || [],
+      additionalFields: item.additional_fields || null,
       tags: Array.isArray(item.tags) ? item.tags : (item.tags ? [item.tags] : []),
       // Detail fields (always included)
       deskripsi: item.deskripsi || '',

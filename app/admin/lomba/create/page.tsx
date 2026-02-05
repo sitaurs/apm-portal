@@ -27,6 +27,9 @@ interface LombaFormData {
   status: string;
   tipe_pendaftaran: string;
   poster: string;
+  thumbnail: string;
+  posters: string[];
+  additional_fields: Array<{label: string; value: string}>;
 }
 
 const initialFormData: LombaFormData = {
@@ -49,6 +52,9 @@ const initialFormData: LombaFormData = {
   status: 'draft',
   tipe_pendaftaran: 'internal',
   poster: '',
+  thumbnail: '',
+  posters: [],
+  additional_fields: [],
 };
 
 const kategoriOptions = [
@@ -255,6 +261,123 @@ export default function CreateLombaPage() {
             label="Upload Poster"
             helperText="Ukuran rekomendasi: 800x1200px (Portrait). Max 5MB."
           />
+        </div>
+
+        {/* Thumbnail Upload */}
+        <div className="bg-white rounded-xl p-6 shadow-sm border border-slate-200">
+          <h2 className="text-lg font-semibold text-slate-800 mb-4">Thumbnail (16:9)</h2>
+          <ImageUpload
+            value={formData.thumbnail}
+            onChange={(value) => setFormData(prev => ({ ...prev, thumbnail: value as string }))}
+            category="lomba"
+            label="Upload Thumbnail"
+            helperText="Thumbnail untuk tampilan card/list. Ukuran: 800x450px (16:9). Max 5MB."
+          />
+          <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-lg flex items-start gap-2">
+            <Info size={16} className="text-blue-600 flex-shrink-0 mt-0.5" />
+            <p className="text-sm text-blue-800">
+              Thumbnail akan diprioritaskan untuk tampilan card di halaman list. Jika kosong, akan menggunakan poster utama.
+            </p>
+          </div>
+        </div>
+
+        {/* Multiple Posters */}
+        <div className="bg-white rounded-xl p-6 shadow-sm border border-slate-200">
+          <h2 className="text-lg font-semibold text-slate-800 mb-4">Poster/Flyer Tambahan</h2>
+          <div className="space-y-4">
+            {formData.posters.map((poster, index) => (
+              <div key={index} className="flex items-end gap-3">
+                <div className="flex-1">
+                  <ImageUpload
+                    value={poster}
+                    onChange={(value) => {
+                      const newPosters = [...formData.posters];
+                      newPosters[index] = value as string;
+                      setFormData(prev => ({ ...prev, posters: newPosters }));
+                    }}
+                    category="lomba"
+                    label={`Poster ${index + 1}`}
+                    helperText="Max 5MB"
+                  />
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const newPosters = formData.posters.filter((_, i) => i !== index);
+                    setFormData(prev => ({ ...prev, posters: newPosters }));
+                  }}
+                  className="px-4 py-2 text-red-600 hover:bg-red-50 rounded-lg border border-red-200 transition-colors mb-6"
+                >
+                  Hapus
+                </button>
+              </div>
+            ))}
+            <button
+              type="button"
+              onClick={() => setFormData(prev => ({ ...prev, posters: [...prev.posters, ''] }))}
+              className="w-full px-4 py-3 border-2 border-dashed border-slate-300 rounded-lg text-slate-600 hover:border-blue-500 hover:text-blue-600 hover:bg-blue-50 transition-colors"
+            >
+              + Tambah Poster/Flyer
+            </button>
+          </div>
+        </div>
+
+        {/* Additional Fields */}
+        <div className="bg-white rounded-xl p-6 shadow-sm border border-slate-200">
+          <h2 className="text-lg font-semibold text-slate-800 mb-4">Field Tambahan</h2>
+          <p className="text-sm text-slate-600 mb-4">
+            Tambahkan informasi tambahan seperti Link Panduan, Link Grup, dll.
+          </p>
+          <div className="space-y-3">
+            {formData.additional_fields.map((field, index) => (
+              <div key={index} className="flex items-end gap-3">
+                <div className="flex-1 grid grid-cols-2 gap-3">
+                  <input
+                    type="text"
+                    value={field.label}
+                    onChange={(e) => {
+                      const newFields = [...formData.additional_fields];
+                      newFields[index].label = e.target.value;
+                      setFormData(prev => ({ ...prev, additional_fields: newFields }));
+                    }}
+                    placeholder="Label (contoh: Link Panduan)"
+                    className="px-4 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                  <input
+                    type="text"
+                    value={field.value}
+                    onChange={(e) => {
+                      const newFields = [...formData.additional_fields];
+                      newFields[index].value = e.target.value;
+                      setFormData(prev => ({ ...prev, additional_fields: newFields }));
+                    }}
+                    placeholder="Value (contoh: https://drive.google.com/...)"
+                    className="px-4 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const newFields = formData.additional_fields.filter((_, i) => i !== index);
+                    setFormData(prev => ({ ...prev, additional_fields: newFields }));
+                  }}
+                  className="px-4 py-2.5 text-red-600 hover:bg-red-50 rounded-lg border border-red-200 transition-colors"
+                >
+                  Hapus
+                </button>
+              </div>
+            ))}
+            <button
+              type="button"
+              onClick={() => setFormData(prev => ({ 
+                ...prev, 
+                additional_fields: [...prev.additional_fields, { label: '', value: '' }] 
+              }))}
+              className="w-full px-4 py-3 border-2 border-dashed border-slate-300 rounded-lg text-slate-600 hover:border-blue-500 hover:text-blue-600 hover:bg-blue-50 transition-colors"
+            >
+              + Tambah Field
+            </button>
+          </div>
         </div>
 
         {/* Tipe Pendaftaran */}

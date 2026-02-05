@@ -179,6 +179,15 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
       updateData.poster = body.poster || null
     }
     
+    // NEW: Support thumbnail for list/card view (16:9 aspect ratio)
+    if (body.thumbnail !== undefined) updateData.thumbnail = body.thumbnail || null
+    
+    // NEW: Support multiple posters/flyers as array
+    if (body.posters !== undefined) updateData.posters = body.posters || []
+    
+    // NEW: Support dynamic additional fields [{label, value}]
+    if (body.additional_fields !== undefined) updateData.additional_fields = body.additional_fields || null
+    
     if (body.tags !== undefined) updateData.tags = body.tags || null
     if (body.status !== undefined) updateData.status = body.status
     if (body.is_featured !== undefined) updateData.is_featured = body.is_featured
@@ -251,10 +260,23 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
       }
     }
 
-    // Soft delete
+    // Soft delete lomba
     await prisma.lomba.update({
       where: { id: lombaId },
       data: { is_deleted: true },
+    })
+
+    // Auto-sync Calendar: Deactivate calendar events linked to this lomba
+    // Format: /lomba/[slug] or contains lomba title
+    await prisma.calendarEvent.updateMany({
+      where: { 
+        OR: [
+          { link: { contains: `/lomba/${existing.slug}` } },
+          { title: { contains: existing.nama_lomba } },
+        ],
+        is_active: true,
+      },
+      data: { is_active: false },
     })
 
     return NextResponse.json({ success: true, message: 'Lomba berhasil dihapus' })

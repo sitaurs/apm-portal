@@ -37,6 +37,9 @@ interface LombaItem {
   isUrgent: boolean;
   isFree: boolean;
   posterUrl: string | null;
+  thumbnail?: string | null;
+  posters?: string[];
+  additionalFields?: Array<{label: string; value: string}> | null;
 }
 
 interface LombaPageClientProps {

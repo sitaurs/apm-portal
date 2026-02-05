@@ -13,7 +13,10 @@ import {
   ExternalLink,
   FileText,
   X,
-  Globe
+  Globe,
+  Plus,
+  Pencil,
+  Trash2
 } from 'lucide-react';
 import { BackButton } from '@/components/admin/BackButton';
 
@@ -32,6 +35,9 @@ interface Prestasi {
   submitterNim: string;
   submitterEmail: string;
   dateCreated: string;
+  isPublished?: boolean;
+  publishedPrestasiId?: number;
+  slug?: string;
 }
 
 interface Meta {
@@ -118,6 +124,29 @@ export default function AdminPrestasiPage() {
     setShowModal(true);
   };
 
+  const handleDelete = async (id: number, name: string) => {
+    if (!confirm(`Yakin ingin menghapus prestasi "${name}"?\n\nData prestasi dan submission terkait akan dihapus permanen.`)) {
+      return;
+    }
+    
+    try {
+      const res = await fetch(`/api/admin/prestasi/${id}`, {
+        method: 'DELETE',
+      });
+      
+      if (res.ok) {
+        alert('Prestasi berhasil dihapus');
+        fetchData();
+      } else {
+        const error = await res.json();
+        alert(error.error || 'Gagal menghapus prestasi');
+      }
+    } catch (error) {
+      console.error('Error deleting:', error);
+      alert('Terjadi kesalahan saat menghapus');
+    }
+  };
+
   const handleVerify = async (newStatus: 'approved' | 'rejected') => {
     if (!selectedPrestasi) return;
     
@@ -187,9 +216,18 @@ export default function AdminPrestasiPage() {
       <BackButton />
 
       {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold text-slate-800">Verifikasi Prestasi</h1>
-        <p className="text-slate-600">Kelola dan verifikasi prestasi yang disubmit mahasiswa</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-slate-800">Verifikasi Prestasi</h1>
+          <p className="text-slate-600">Kelola dan verifikasi prestasi yang disubmit mahasiswa</p>
+        </div>
+        <Link
+          href="/admin/prestasi/create"
+          className="flex items-center gap-2 px-4 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+        >
+          <Plus size={18} />
+          <span>Buat Prestasi Baru</span>
+        </Link>
       </div>
 
       {/* Filters */}
@@ -218,7 +256,7 @@ export default function AdminPrestasiPage() {
           >
             <option value="">Semua Status</option>
             <option value="pending">Menunggu</option>
-            <option value="verified">Terverifikasi</option>
+            <option value="approved">Terverifikasi</option>
             <option value="rejected">Ditolak</option>
           </select>
 
@@ -324,7 +362,8 @@ export default function AdminPrestasiPage() {
                           >
                             <Eye size={16} />
                           </button>
-                          {(item.status === 'approved' || item.status === 'verified') && (
+                          {/* Show Publish button if approved but not published yet */}
+                          {(item.status === 'approved' || item.status === 'verified') && !item.isPublished && (
                             <Link
                               href={`/admin/prestasi/${item.id}/publish`}
                               className="p-2 text-green-500 hover:text-green-700 hover:bg-green-50 rounded-lg transition-colors"
@@ -333,6 +372,36 @@ export default function AdminPrestasiPage() {
                               <Globe size={16} />
                             </Link>
                           )}
+                          {/* Show Edit button if already published */}
+                          {item.isPublished && item.publishedPrestasiId && (
+                            <Link
+                              href={`/admin/prestasi/${item.publishedPrestasiId}/edit`}
+                              className="p-2 text-amber-500 hover:text-amber-700 hover:bg-amber-50 rounded-lg transition-colors"
+                              title="Edit Prestasi"
+                            >
+                              <Pencil size={16} />
+                            </Link>
+                          )}
+                          {/* View published */}
+                          {item.isPublished && item.slug && (
+                            <a
+                              href={`/prestasi/${item.slug}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="p-2 text-purple-500 hover:text-purple-700 hover:bg-purple-50 rounded-lg transition-colors"
+                              title="Lihat di Website"
+                            >
+                              <ExternalLink size={16} />
+                            </a>
+                          )}
+                          {/* Delete button */}
+                          <button
+                            onClick={() => handleDelete(item.id, item.namaPrestasi)}
+                            className="p-2 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors"
+                            title="Hapus"
+                          >
+                            <Trash2 size={16} />
+                          </button>
                         </div>
                       </td>
                     </tr>

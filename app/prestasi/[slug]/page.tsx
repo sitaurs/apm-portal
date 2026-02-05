@@ -42,12 +42,57 @@ async function getPrestasiBySlug(slug: string) {
   }
 }
 
+async function getRelatedPrestasi(currentId: number, tingkat: string, limit = 3) {
+  try {
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
+    // Fetch related prestasi with same tingkat, exclude current
+    const res = await fetch(`${baseUrl}/api/prestasi?tingkat=${tingkat.toLowerCase()}&limit=${limit + 1}`, {
+      cache: 'no-store',
+      next: { revalidate: 300 }, // 5 min cache for related
+    });
+
+    if (!res.ok) {
+      return [];
+    }
+
+    const data = await res.json();
+    // Filter out current prestasi
+    return (data.data || [])
+      .filter((p: any) => p.id !== currentId)
+      .slice(0, limit);
+  } catch (error) {
+    console.error('Error fetching related prestasi:', error);
+    return [];
+  }
+}
+
 export default async function PrestasiDetailPage({ params }: { params: { slug: string } }) {
   const prestasi = await getPrestasiBySlug(params.slug);
 
   if (!prestasi) {
     notFound();
   }
+
+  // Fetch related prestasi
+  const relatedPrestasi = await getRelatedPrestasi(
+    prestasi.id, 
+    prestasi.tingkat.toLowerCase()
+  );
+
+  // Format date helper
+  const formatTanggal = (dateStr: string | null) => {
+    if (!dateStr || dateStr === 'Belum diisi') return 'Belum diisi';
+    try {
+      const date = new Date(dateStr);
+      return date.toLocaleDateString('id-ID', { 
+        day: 'numeric', 
+        month: 'long', 
+        year: 'numeric' 
+      });
+    } catch {
+      return dateStr;
+    }
+  };
 
   // Map API data to component format
   const prestasiDetail = {
@@ -60,7 +105,7 @@ export default async function PrestasiDetailPage({ params }: { params: { slug: s
     tingkat: prestasi.tingkat,
     kategori: prestasi.kategori,
     tahun: prestasi.tahun.toString(),
-    tanggalLomba: prestasi.tanggal_lomba || 'Belum diisi',
+    tanggalLomba: formatTanggal(prestasi.tanggal_lomba),
     lokasi: prestasi.lokasi || 'Belum diisi',
     deskripsi: prestasi.deskripsi || 'Belum ada deskripsi lengkap.',
     proyek: prestasi.proyek_data ? {
@@ -72,67 +117,19 @@ export default async function PrestasiDetailPage({ params }: { params: { slug: s
     tim: prestasi.tim_mahasiswa || [],
     pembimbing: prestasi.pembimbing_data ? {
       nama: prestasi.pembimbing_data.nama || '',
-      nip: prestasi.pembimbing_data.nip || '',
-      fakultas: prestasi.pembimbing_data.fakultas || '',
+      nidn: prestasi.pembimbing_data.nidn || '',
+      whatsapp: prestasi.pembimbing_data.whatsapp || '',
     } : null,
-    fakultas: prestasi.fakultas,
-    prodi: prestasi.prodi,
-    hadiah: prestasi.hadiah_data?.deskripsi || '',
+    prodi: prestasi.prodi || 'Belum diisi',
+    // Galeri from prestasi table (not dokumentasi_files from documents)
+    galeri: prestasi.galeri || [],
     dokumentasi: prestasi.dokumentasi_files || [],
     sertifikat: prestasi.sertifikat_file || null,
     sumberBerita: prestasi.sumber_berita || '',
+    linkBerita: prestasi.link_berita || '',
+    linkPortofolio: prestasi.link_portofolio || '',
   };
-
-  // Related prestasi
-const relatedPrestasi = [
-  {
-    id: '3',
-    slug: 'gold-medal-icpc-asia',
-    title: 'Gold Medal ICPC Asia Regional',
-    namaLomba: 'ICPC Asia Regional 2025',
-    peringkat: 'Gold Medal',
-    tingkat: 'Internasional',
-    tahun: '2025',
-    tim: [
-      { nama: 'Faisal Rahman', nim: '1234567895' },
-      { nama: 'Galih Pratama', nim: '1234567896' },
-    ],
-    fakultas: 'Fakultas Informatika',
-    prodi: 'S1 Teknik Informatika',
-    kategori: 'Teknologi',
-  },
-  {
-    id: '6',
-    slug: 'best-paper-award-ieee',
-    title: 'Best Paper Award IEEE Conference',
-    namaLomba: 'IEEE International Conference 2025',
-    peringkat: 'Best Paper',
-    tingkat: 'Internasional',
-    tahun: '2025',
-    tim: [
-      { nama: 'Lina Marlina', nim: '1234567901' },
-    ],
-    fakultas: 'Fakultas Teknik Elektro',
-    prodi: 'S1 Teknik Elektro',
-    kategori: 'Akademik',
-  },
-  {
-    id: '2',
-    slug: 'juara-2-business-case',
-    title: 'Juara 2 Business Case Competition',
-    namaLomba: 'National Business Case Competition 2025',
-    peringkat: 'Juara 2',
-    tingkat: 'Nasional',
-    tahun: '2025',
-    tim: [
-      { nama: 'Diana Putri', nim: '1234567893' },
-    ],
-    fakultas: 'Fakultas Ekonomi dan Bisnis',
-    prodi: 'S1 Manajemen',
-    kategori: 'Bisnis',
-  },
-];
-
+  
   const getPeringkatColor = (peringkat: string) => {
     if (peringkat.toLowerCase().includes('juara 1') || peringkat.toLowerCase().includes('gold')) {
       return 'from-yellow-400 to-yellow-600';
@@ -242,12 +239,29 @@ const relatedPrestasi = [
             {/* Deskripsi */}
             <div className="bg-white rounded-xl shadow-card p-6">
               <h2 className="text-lg font-semibold text-text-main mb-4">Deskripsi</h2>
-              <div className="prose prose-sm max-w-none text-text-muted">
-                {prestasiDetail.deskripsi.split('\n').map((paragraph: string, idx: number) => (
-                  <p key={idx} className="mb-3">{paragraph.trim()}</p>
-                ))}
-              </div>
+              <div 
+                className="prose prose-sm max-w-none text-text-muted"
+                dangerouslySetInnerHTML={{ __html: prestasiDetail.deskripsi }}
+              />
             </div>
+
+            {/* Galeri Dokumentasi - from galeri array */}
+            {prestasiDetail.galeri && prestasiDetail.galeri.length > 0 && (
+              <div className="bg-white rounded-xl shadow-card p-6">
+                <h2 className="text-lg font-semibold text-text-main mb-4">Galeri Dokumentasi</h2>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                  {prestasiDetail.galeri.map((foto: string, idx: number) => (
+                    <div key={idx} className="aspect-square rounded-lg overflow-hidden border border-slate-200 hover:border-primary/50 transition-colors">
+                      <img 
+                        src={foto} 
+                        alt={`Dokumentasi ${idx + 1}`}
+                        className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {/* Tim */}
             <div className="bg-white rounded-xl shadow-card p-6">
@@ -316,8 +330,12 @@ const relatedPrestasi = [
                   <Avatar alt={prestasiDetail.pembimbing.nama} size="lg" />
                   <div>
                     <p className="font-medium text-text-main">{prestasiDetail.pembimbing.nama}</p>
-                    <p className="text-sm text-text-muted">NIP: {prestasiDetail.pembimbing.nip}</p>
-                    <p className="text-sm text-text-muted">{prestasiDetail.pembimbing.fakultas}</p>
+                    {prestasiDetail.pembimbing.nidn && (
+                      <p className="text-sm text-text-muted">NIDN: {prestasiDetail.pembimbing.nidn}</p>
+                    )}
+                    {prestasiDetail.pembimbing.whatsapp && (
+                      <p className="text-sm text-text-muted">WA: {prestasiDetail.pembimbing.whatsapp}</p>
+                    )}
                   </div>
                 </div>
               </div>
@@ -347,18 +365,16 @@ const relatedPrestasi = [
                 </div>
               </div>
 
-              {/* Fakultas & Prodi */}
+              {/* Program Studi */}
               <div className="mb-6">
-                <p className="text-sm text-text-muted mb-2">Fakultas</p>
-                <p className="font-medium text-text-main mb-3">{prestasiDetail.fakultas}</p>
                 <p className="text-sm text-text-muted mb-2">Program Studi</p>
                 <p className="font-medium text-text-main">{prestasiDetail.prodi}</p>
               </div>
 
-              {/* Hadiah */}
+              {/* Peringkat - show nicely formatted */}
               <div className="bg-accent/10 rounded-lg p-4 mb-6">
-                <p className="text-sm text-text-muted mb-1">Hadiah</p>
-                <p className="font-semibold text-accent">{prestasiDetail.hadiah}</p>
+                <p className="text-sm text-text-muted mb-1">Peringkat</p>
+                <p className="font-semibold text-accent">{prestasiDetail.peringkat.replace(/_/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase())}</p>
               </div>
 
               <hr className="my-5" />
@@ -367,6 +383,8 @@ const relatedPrestasi = [
               <PrestasiActions
                 sumberBerita={prestasiDetail.sumberBerita}
                 sertifikat={prestasiDetail.sertifikat}
+                linkBerita={prestasiDetail.linkBerita}
+                linkPortofolio={prestasiDetail.linkPortofolio}
                 title={prestasiDetail.title}
               />
             </div>
@@ -385,7 +403,7 @@ const relatedPrestasi = [
             </Link>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {relatedPrestasi.map((prestasi) => (
+            {relatedPrestasi.map((prestasi: any) => (
               <PrestasiCard key={prestasi.id} {...prestasi} />
             ))}
           </div>

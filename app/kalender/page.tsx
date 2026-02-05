@@ -296,10 +296,10 @@ export default function KalenderPage() {
                   </div>
 
                   {/* Calendar Days */}
-                  <div className="grid grid-cols-7 gap-1">
+                  <div className="grid grid-cols-7 gap-2">
                     {/* Empty cells for days before month starts */}
                     {Array.from({ length: startDayOfWeek }).map((_, i) => (
-                      <div key={`empty-${i}`} className="h-24 bg-gray-50 rounded-lg" />
+                      <div key={`empty-${i}`} className="h-32 bg-gray-50 rounded-lg" />
                     ))}
 
                     {/* Days of the month */}
@@ -313,28 +313,28 @@ export default function KalenderPage() {
                           key={day.toISOString()}
                           onClick={() => setSelectedDate(day)}
                           className={cn(
-                            'h-24 p-1 rounded-lg transition-all text-left flex flex-col',
+                            'h-32 p-2 rounded-lg transition-all text-left flex flex-col border border-gray-100',
                             isSelected
                               ? 'ring-2 ring-primary bg-primary/5'
-                              : 'hover:bg-gray-50',
-                            isCurrentDay && 'bg-primary/10'
+                              : 'hover:bg-gray-50 hover:shadow-md',
+                            isCurrentDay && 'bg-primary/10 border-primary/30'
                           )}
                         >
                           <span className={cn(
-                            'text-sm font-medium w-7 h-7 flex items-center justify-center rounded-full',
+                            'text-sm font-semibold w-7 h-7 flex items-center justify-center rounded-full mb-1',
                             isCurrentDay && 'bg-primary text-white',
-                            isSelected && !isCurrentDay && 'text-primary'
+                            isSelected && !isCurrentDay && 'text-primary font-bold'
                           )}>
                             {format(day, 'd')}
                           </span>
 
-                          {/* Event Dots */}
-                          <div className="flex-1 flex flex-col gap-0.5 mt-1 overflow-hidden">
+                          {/* Event Items */}
+                          <div className="flex-1 flex flex-col gap-1 mt-0.5 overflow-hidden">
                             {events.slice(0, 3).map(event => (
                               <div
                                 key={event.id}
                                 className={cn(
-                                  'text-xs px-1 py-0.5 rounded truncate',
+                                  'text-[10px] leading-tight px-1.5 py-1 rounded font-medium truncate',
                                   eventTypeColors[event.type].bg,
                                   eventTypeColors[event.type].text
                                 )}
@@ -344,7 +344,7 @@ export default function KalenderPage() {
                               </div>
                             ))}
                             {events.length > 3 && (
-                              <span className="text-xs text-text-muted">+{events.length - 3} lainnya</span>
+                              <span className="text-[9px] text-text-muted font-medium px-1">+{events.length - 3} lagi</span>
                             )}
                           </div>
                         </button>

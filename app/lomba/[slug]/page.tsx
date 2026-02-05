@@ -7,6 +7,8 @@ import {
   Breadcrumb
 } from '@/components/ui';
 import { Countdown } from '@/components/ui/Countdown';
+import { PosterGallery } from './PosterGallery';
+import { ThumbnailViewer } from './ThumbnailViewer';
 import { 
   Calendar, 
   Clock, 
@@ -61,15 +63,17 @@ export default async function LombaDetailPage({ params }: { params: { slug: stri
     lokasi: lomba.lokasi || 'Belum diisi',
     biaya: lomba.biaya || 0,
     peserta: lomba.peserta || 'Belum diisi',
-    hadiah: Array.isArray(lomba.hadiah) ? lomba.hadiah : [],
+    hadiah: lomba.hadiah || '',
     deskripsi: lomba.deskripsi || 'Belum ada deskripsi lengkap.',
-    syarat: Array.isArray(lomba.syarat) ? lomba.syarat : [],
-    timeline: Array.isArray(lomba.timeline) ? lomba.timeline : [],
-    kontakEmail: lomba.kontakEmail || '',
-    kontakPhone: lomba.kontakPhone || '',
-    kontakWebsite: lomba.kontakWebsite || '',
+    syarat: lomba.syarat_ketentuan || lomba.syaratKetentuan || '',
+    kontakEmail: lomba.kontak_panitia?.email || lomba.kontakEmail || '',
+    kontakPhone: lomba.kontak_panitia?.phone || lomba.kontakPhone || '',
+    kontakWhatsapp: lomba.kontak_panitia?.whatsapp || '',
     linkPendaftaran: lomba.linkPendaftaran || '',
     posterUrl: lomba.posterUrl,
+    thumbnail: lomba.thumbnail || null,
+    posters: Array.isArray(lomba.posters) ? lomba.posters : [],
+    additionalFields: Array.isArray(lomba.additionalFields) ? lomba.additionalFields : (lomba.additionalFields ? Object.entries(lomba.additionalFields).map(([label, value]) => ({ label, value })) : []),
     tags: Array.isArray(lomba.tags) ? lomba.tags : [],
     tipePendaftaran: lomba.tipePendaftaran || lomba.tipe_pendaftaran || 'internal',
   };
@@ -173,78 +177,64 @@ export default async function LombaDetailPage({ params }: { params: { slug: stri
               </div>
             </div>
 
+            {/* Poster/Flyer Gallery - Moved to top */}
+            <PosterGallery posters={lombaDetail.posters} title={lombaDetail.title} />
+
             {/* Deskripsi */}
             <div className="bg-white rounded-xl shadow-card p-6">
               <h2 className="text-lg font-semibold text-text-main mb-4">Deskripsi</h2>
-              <div className="prose prose-sm max-w-none text-text-muted">
-                {lombaDetail.deskripsi.split('\n').map((paragraph: string, idx: number) => (
-                  paragraph.trim() && <p key={idx} className="mb-3">{paragraph.trim()}</p>
-                ))}
-              </div>
+              <div 
+                className="prose prose-sm max-w-none text-text-muted" 
+                dangerouslySetInnerHTML={{ __html: lombaDetail.deskripsi }}
+              />
             </div>
 
             {/* Syarat & Ketentuan */}
-            {lombaDetail.syarat.length > 0 && (
+            {lombaDetail.syarat && lombaDetail.syarat.trim() && (
               <div className="bg-white rounded-xl shadow-card p-6">
-                <h2 className="text-lg font-semibold text-text-main mb-4">Syarat & Ketentuan</h2>
-                <ul className="space-y-3">
-                  {lombaDetail.syarat.map((syarat: any, idx: number) => (
-                    <li key={idx} className="flex items-start gap-3">
-                      <CheckCircle className="w-5 h-5 text-success flex-shrink-0 mt-0.5" />
-                      <span className="text-text-muted">{typeof syarat === 'string' ? syarat : syarat.text || ''}</span>
-                    </li>
-                  ))}
-                </ul>
+                <h2 className="text-lg font-semibold text-text-main mb-4">Persyaratan</h2>
+                <div 
+                  className="prose prose-sm max-w-none text-text-muted" 
+                  dangerouslySetInnerHTML={{ __html: lombaDetail.syarat }}
+                />
               </div>
             )}
 
             {/* Hadiah */}
-            {lombaDetail.hadiah.length > 0 && (
+            {lombaDetail.hadiah && lombaDetail.hadiah.trim() && (
               <div className="bg-white rounded-xl shadow-card p-6">
                 <h2 className="text-lg font-semibold text-text-main mb-4 flex items-center gap-2">
                   <Gift className="w-5 h-5 text-accent" />
                   Hadiah
                 </h2>
-                <div className="grid sm:grid-cols-2 gap-4">
-                  {lombaDetail.hadiah.map((h: any, idx: number) => (
-                    <div 
-                      key={idx}
-                      className="p-4 rounded-lg border-2 border-accent/20 bg-gradient-to-br from-accent/5 to-accent/10"
-                    >
-                      <div className="flex items-center gap-2 mb-2">
-                        <Trophy className="w-5 h-5 text-accent" />
-                        <span className="font-semibold text-accent">{h.peringkat || h.title || `Hadiah ${idx + 1}`}</span>
-                      </div>
-                      <p className="text-lg font-bold text-text-main mb-1">{h.nominal || h.prize || '-'}</p>
-                      {h.detail && <p className="text-sm text-text-muted">{h.detail}</p>}
-                    </div>
-                  ))}
-                </div>
+                <div 
+                  className="prose prose-sm max-w-none text-text-muted" 
+                  dangerouslySetInnerHTML={{ __html: lombaDetail.hadiah }}
+                />
               </div>
             )}
 
-            {/* Timeline */}
-            {lombaDetail.timeline.length > 0 && (
+            {/* Additional Fields / Informasi Tambahan */}
+            {lombaDetail.additionalFields.length > 0 && (
               <div className="bg-white rounded-xl shadow-card p-6">
-                <h2 className="text-lg font-semibold text-text-main mb-4 flex items-center gap-2">
-                  <Calendar className="w-5 h-5 text-primary" />
-                  Timeline
-                </h2>
-                <div className="space-y-4">
-                  {lombaDetail.timeline.map((item: any, idx: number) => (
-                    <div key={idx} className="flex gap-4">
-                      <div className="flex flex-col items-center">
-                        <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                          <span className="text-sm font-semibold text-primary">{idx + 1}</span>
-                        </div>
-                        {idx < lombaDetail.timeline.length - 1 && (
-                          <div className="w-0.5 flex-1 bg-gray-200 mt-2"></div>
-                        )}
-                      </div>
-                      <div className="flex-1 pb-4">
-                        <p className="font-medium text-text-main">{item.kegiatan || item.activity || '-'}</p>
-                        <p className="text-sm text-text-muted">{item.tanggal || item.date || '-'}</p>
-                      </div>
+                <h2 className="text-lg font-semibold text-text-main mb-4">Informasi Tambahan</h2>
+                <div className="grid gap-4">
+                  {lombaDetail.additionalFields.map((field: any, idx: number) => (
+                    <div key={idx} className="p-4 bg-gray-50 rounded-lg">
+                      <p className="text-xs text-text-muted uppercase tracking-wide mb-2 font-medium">{field.label}</p>
+                      {field.value.startsWith('http') ? (
+                        <a 
+                          href={field.value} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="text-sm text-primary hover:underline flex items-center gap-2 font-medium"
+                        >
+                          <ExternalLink className="w-4 h-4" />
+                          {field.value}
+                        </a>
+                      ) : (
+                        <p className="text-sm text-text-main font-medium">{field.value}</p>
+                      )}
                     </div>
                   ))}
                 </div>
@@ -255,18 +245,12 @@ export default async function LombaDetailPage({ params }: { params: { slug: stri
           {/* Right Column - Sidebar */}
           <div className="lg:col-span-1">
             <div className="sticky top-24 space-y-6">
-              {/* Poster */}
-              {lombaDetail.posterUrl && (
-                <div className="bg-white rounded-xl shadow-card overflow-hidden">
-                  <div className="relative aspect-[3/4] w-full">
-                    <Image
-                      src={lombaDetail.posterUrl}
-                      alt={lombaDetail.title}
-                      fill
-                      className="object-cover"
-                    />
-                  </div>
-                </div>
+              {/* Poster Utama dengan Lightbox */}
+              {(lombaDetail.thumbnail || lombaDetail.posterUrl) && (
+                <ThumbnailViewer 
+                  imageUrl={lombaDetail.thumbnail || lombaDetail.posterUrl} 
+                  title={lombaDetail.title}
+                />
               )}
 
               {/* CTA Buttons - Conditional based on tipe_pendaftaran */}
@@ -301,9 +285,9 @@ export default async function LombaDetailPage({ params }: { params: { slug: stri
               </div>
 
               {/* Kontak */}
-              {(lombaDetail.kontakEmail || lombaDetail.kontakPhone || lombaDetail.kontakWebsite) && (
+              {(lombaDetail.kontakEmail || lombaDetail.kontakPhone || lombaDetail.kontakWhatsapp) && (
                 <div className="bg-white rounded-xl shadow-card p-6">
-                  <h3 className="font-semibold text-text-main mb-4">Kontak</h3>
+                  <h3 className="font-semibold text-text-main mb-4">Kontak Panitia</h3>
                   <div className="space-y-3">
                     {lombaDetail.kontakEmail && (
                       <a href={`mailto:${lombaDetail.kontakEmail}`} className="flex items-center gap-3 text-sm text-text-muted hover:text-primary">
@@ -317,10 +301,10 @@ export default async function LombaDetailPage({ params }: { params: { slug: stri
                         {lombaDetail.kontakPhone}
                       </a>
                     )}
-                    {lombaDetail.kontakWebsite && (
-                      <a href={lombaDetail.kontakWebsite} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 text-sm text-text-muted hover:text-primary">
-                        <Globe className="w-4 h-4" />
-                        Website
+                    {lombaDetail.kontakWhatsapp && (
+                      <a href={`https://wa.me/${lombaDetail.kontakWhatsapp.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 text-sm text-text-muted hover:text-primary">
+                        <Phone className="w-4 h-4" />
+                        WhatsApp: {lombaDetail.kontakWhatsapp}
                       </a>
                     )}
                   </div>

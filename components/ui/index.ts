@@ -8,6 +8,7 @@ export { Countdown, CountdownBadge } from './Countdown';
 export { Avatar, AvatarGroup } from './Avatar';
 export { Modal, ConfirmDialog } from './Modal';
 export { Tabs, TabsList, TabsTrigger, TabsContent } from './Tabs';
+export { ImageLightbox } from './ImageLightbox';
 export { 
   Skeleton, 
   CardSkeleton, 

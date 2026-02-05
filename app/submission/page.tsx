@@ -596,8 +596,8 @@ export default function SubmissionPage() {
                       onChange={(e) => updateFormData('dosenPembimbing', e.target.value)}
                     />
                     <Input
-                      label="NIP"
-                      placeholder="NIP Dosen"
+                      label="NIDN"
+                      placeholder="Nomor Induk Dosen Nasional"
                       value={formData.nipPembimbing}
                       onChange={(e) => updateFormData('nipPembimbing', e.target.value)}
                     />

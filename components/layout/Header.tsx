@@ -61,11 +61,11 @@ export function Header() {
                   )}
                 >
                   {item.name}
-                  {item.submenu && <ChevronDown className="w-4 h-4" />}
+                  {'submenu' in item && <ChevronDown className="w-4 h-4" />}
                 </Link>
 
                 {/* Dropdown Submenu */}
-                {item.submenu && (
+                {'submenu' in item && item.submenu && (
                   <div className="absolute top-full left-0 pt-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
                     <div className="bg-white rounded-xl shadow-dropdown border border-gray-100 py-2 min-w-[200px]">
                       {item.submenu.map((subItem) => (
@@ -153,7 +153,7 @@ export function Header() {
                   )}
                 >
                   {item.name}
-                  {item.submenu && (
+                  {'submenu' in item && (
                     <ChevronDown
                       className={cn(
                         'w-4 h-4 transition-transform',
@@ -164,7 +164,7 @@ export function Header() {
                 </button>
 
                 {/* Mobile Submenu */}
-                {item.submenu && openSubmenu === item.name && (
+                {'submenu' in item && item.submenu && openSubmenu === item.name && (
                   <div className="ml-4 mt-1 space-y-1 animate-slide-down">
                     {item.submenu.map((subItem) => (
                       <Link
