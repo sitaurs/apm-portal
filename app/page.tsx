@@ -20,41 +20,42 @@ import {
   ChevronRight,
   Star
 } from 'lucide-react';
+import { prisma } from '@/lib/prisma/client';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 60;
 
-const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
-
 const filterTags = ['Online', 'Gratis', 'Nasional'];
 
-// Fetch functions - using internal APIs
+// Direct database queries - no fetch needed (works on Vercel serverless)
 async function getLomba() {
   try {
-    const res = await fetch(`${BASE_URL}/api/lomba?limit=4&featured=true`, {
-      next: { revalidate: 60 },
+    const data = await prisma.lomba.findMany({
+      where: {
+        is_deleted: false,
+        status: 'open',
+      },
+      orderBy: [
+        { is_featured: 'desc' },
+        { deadline: 'asc' },
+      ],
+      take: 4,
     });
 
-    if (!res.ok) {
-      console.error(`Failed to fetch lomba: ${res.status}`);
-      return [];
-    }
-    const data = await res.json();
-
-    return (data.data || []).map((item: Record<string, unknown>) => ({
+    return data.map((item) => ({
       id: String(item.id),
       slug: item.slug,
-      title: item.title || item.nama_lomba,
-      deadline: item.deadline,
+      title: item.nama_lomba,
+      deadline: item.deadline?.toISOString() ?? undefined,
       deadlineDisplay: item.deadline
-        ? new Date(item.deadline as string).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })
-        : null,
+        ? new Date(item.deadline).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })
+        : undefined,
       kategori: item.kategori,
       tingkat: item.tingkat,
-      status: item.status || 'open',
-      isUrgent: item.isUrgent,
-      isFree: item.isFree,
-      image: item.posterUrl || null,
+      status: item.status as 'open' | 'closed' | 'coming-soon',
+      isUrgent: item.is_urgent,
+      isFree: item.biaya === 0,
+      image: item.thumbnail || item.poster || undefined,
     }));
   } catch (error) {
     console.error('Error fetching lomba:', error);
@@ -64,26 +65,24 @@ async function getLomba() {
 
 async function getPrestasi() {
   try {
-    const res = await fetch(`${BASE_URL}/api/prestasi?limit=3`, {
-      next: { revalidate: 60 },
+    const data = await prisma.prestasi.findMany({
+      where: {
+        is_published: true,
+      },
+      orderBy: { published_at: 'desc' },
+      take: 3,
     });
 
-    if (!res.ok) {
-      console.error(`Failed to fetch prestasi: ${res.status}`);
-      return [];
-    }
-    const data = await res.json();
-
-    return (data.data || []).map((item: Record<string, unknown>) => ({
+    return data.map((item) => ({
       id: String(item.id),
       slug: item.slug,
-      title: item.namaLomba || item.title,
+      title: item.nama_lomba,
       peringkat: item.peringkat,
       tingkat: item.tingkat,
-      tahun: item.tahun,
+      tahun: item.tahun?.toString() || new Date().getFullYear().toString(),
       kategori: item.kategori || '',
       isVerified: true,
-      foto: item.thumbnailUrl || (Array.isArray(item.galeri) && item.galeri.length > 0 ? item.galeri[0] : null),
+      foto: item.thumbnail || (Array.isArray(item.galeri) && item.galeri.length > 0 ? String(item.galeri[0]) : undefined),
     }));
   } catch (error) {
     console.error('Error fetching prestasi:', error);
@@ -93,21 +92,20 @@ async function getPrestasi() {
 
 async function getExpo() {
   try {
-    const res = await fetch(`${BASE_URL}/api/expo?limit=3`, {
-      next: { revalidate: 60 },
+    const data = await prisma.expo.findMany({
+      where: {
+        is_deleted: false,
+        status: { in: ['upcoming', 'ongoing'] },
+      },
+      orderBy: { tanggal_mulai: 'asc' },
+      take: 3,
     });
 
-    if (!res.ok) {
-      console.error(`Failed to fetch expo: ${res.status}`);
-      return [];
-    }
-    const data = await res.json();
-
-    return (data.data || []).map((item: Record<string, unknown>) => ({
+    return data.map((item) => ({
       id: String(item.id),
       slug: item.slug,
-      title: item.title || item.nama_event,
-      tanggal: item.tanggal,
+      title: item.nama_event,
+      tanggal: item.tanggal_mulai?.toISOString() ?? undefined,
       lokasi: item.lokasi,
     }));
   } catch (error) {
@@ -118,17 +116,17 @@ async function getExpo() {
 
 async function getUpcomingDeadline() {
   try {
-    const res = await fetch(`${BASE_URL}/api/lomba?limit=1&status=open`, {
-      next: { revalidate: 60 },
+    const data = await prisma.lomba.findFirst({
+      where: {
+        is_deleted: false,
+        status: 'open',
+        deadline: { gte: new Date() },
+      },
+      orderBy: { deadline: 'asc' },
+      select: { deadline: true },
     });
 
-    if (!res.ok) return null;
-    const data = await res.json();
-
-    if (data.data && data.data.length > 0 && data.data[0].deadline) {
-      return data.data[0].deadline;
-    }
-    return null;
+    return data?.deadline?.toISOString() || null;
   } catch {
     return null;
   }
@@ -166,17 +164,22 @@ const defaultSettings: SiteSettingsData = {
 
 async function getSiteSettings(): Promise<SiteSettingsData> {
   try {
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
-    const res = await fetch(`${baseUrl}/api/site-settings`, {
-      next: { revalidate: 300 }, // Cache for 5 minutes
-    });
+    // Get actual counts from database
+    const [totalLomba, totalPrestasi, totalExpo] = await Promise.all([
+      prisma.lomba.count({ where: { is_deleted: false, status: 'open' } }),
+      prisma.prestasi.count({ where: { is_published: true } }),
+      prisma.expo.count({ where: { is_deleted: false } }),
+    ]);
 
-    if (!res.ok) {
-      return defaultSettings;
-    }
-
-    const data = await res.json();
-    return data.data || defaultSettings;
+    return {
+      stats: {
+        totalLomba,
+        totalPrestasi,
+        totalMahasiswa: 0, // This would need a separate users table
+        totalExpo,
+      },
+      help: defaultSettings.help,
+    };
   } catch {
     return defaultSettings;
   }
@@ -345,18 +348,7 @@ export default async function HomePage() {
 
           {lomba.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {lomba.map((item: {
-                id: string;
-                slug: string;
-                title: string;
-                deadline: string;
-                deadlineDisplay: string;
-                kategori: string;
-                tingkat: string;
-                status: 'open' | 'closed' | 'coming-soon';
-                isUrgent: boolean;
-                isFree: boolean;
-              }) => (
+              {lomba.map((item) => (
                 <LombaCard key={item.id} {...item} />
               ))}
             </div>
@@ -387,16 +379,7 @@ export default async function HomePage() {
 
           {prestasi.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {prestasi.map((item: {
-                id: string;
-                slug: string;
-                title: string;
-                peringkat: string;
-                tingkat: string;
-                tahun: string;
-                kategori: string;
-                isVerified: boolean;
-              }) => (
+              {prestasi.map((item) => (
                 <PrestasiCard key={item.id} {...item} />
               ))}
             </div>
@@ -427,13 +410,7 @@ export default async function HomePage() {
 
           {expo.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {expo.map((item: {
-                id: string;
-                slug: string;
-                title: string;
-                tanggal: string;
-                lokasi: string;
-              }) => (
+              {expo.map((item) => (
                 <ExpoCard key={item.id} {...item} />
               ))}
             </div>
