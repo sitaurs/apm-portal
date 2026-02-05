@@ -58,125 +58,126 @@ export async function POST(request: NextRequest) {
       slug = `${slug}-${Date.now()}`
     }
 
-    // Use Prisma transaction for atomicity
-    const result = await prisma.$transaction(async (tx) => {
-      // 1. Create dummy PrestasiSubmission
-      const submission = await tx.prestasiSubmission.create({
-        data: {
-          judul: data.judul,
-          nama_lomba: data.nama_lomba,
-          penyelenggara: data.penyelenggara || null,
-          tingkat: data.tingkat,
-          peringkat: data.peringkat,
-          tanggal: data.tanggal ? new Date(data.tanggal) : null,
-          kategori: data.kategori || null,
-          deskripsi: data.deskripsi || null,
-          
-          // Admin identifier
-          submitter_name: 'Admin',
-          submitter_nim: 'ADMIN',
-          submitter_email: session.email || 'admin@apm.polinema.ac.id',
-          submitter_whatsapp: '-',
-          
-          // Auto-approved
-          status: 'approved',
-          reviewed_at: new Date(),
-          reviewed_by: session.id,
-        }
-      })
-
-      // 2. Create team members if provided
-      if (data.team_members && data.team_members.length > 0) {
-        await tx.prestasiTeamMember.createMany({
-          data: data.team_members.map(member => ({
-            submission_id: submission.id,
-            nama: member.nama,
-            nim: member.nim,
-            prodi: member.prodi || null,
-            angkatan: member.angkatan || null,
-            whatsapp: member.whatsapp || null,
-            is_ketua: member.is_ketua,
-          }))
-        })
+    // Create records sequentially (serverless-friendly, no interactive transaction)
+    // Note: Interactive transactions ($transaction with callback) don't work well 
+    // in serverless environments like Vercel due to connection pooling issues
+    
+    // 1. Create dummy PrestasiSubmission
+    const submission = await prisma.prestasiSubmission.create({
+      data: {
+        judul: data.judul,
+        nama_lomba: data.nama_lomba,
+        penyelenggara: data.penyelenggara || null,
+        tingkat: data.tingkat,
+        peringkat: data.peringkat,
+        tanggal: data.tanggal ? new Date(data.tanggal) : null,
+        kategori: data.kategori || null,
+        deskripsi: data.deskripsi || null,
+        
+        // Admin identifier
+        submitter_name: 'Admin',
+        submitter_nim: 'ADMIN',
+        submitter_email: session.email || 'admin@apm.polinema.ac.id',
+        submitter_whatsapp: '-',
+        
+        // Auto-approved
+        status: 'approved',
+        reviewed_at: new Date(),
+        reviewed_by: session.id,
       }
-
-      // 3. Create pembimbing if provided
-      if (data.pembimbing && data.pembimbing.length > 0) {
-        await tx.prestasiPembimbing.createMany({
-          data: data.pembimbing.map(p => ({
-            submission_id: submission.id,
-            nama: p.nama,
-            nidn: p.nidn || null,
-            whatsapp: p.whatsapp || null,
-          }))
-        })
-      }
-
-      // 4. Create documents if provided
-      if (data.documents && data.documents.length > 0) {
-        await tx.prestasiDocument.createMany({
-          data: data.documents.map(doc => ({
-            submission_id: submission.id,
-            type: doc.type,
-            label: doc.label || null,
-            file_path: doc.file_path,
-            file_name: doc.file_name,
-            file_type: doc.file_path.split('.').pop() || 'unknown',
-            file_size: 0, // Size not provided in direct create
-          }))
-        })
-      }
-
-      // 5. Create published Prestasi record
-      const prestasi = await tx.prestasi.create({
-        data: {
-          submission_id: submission.id,
-          judul: data.judul,
-          slug: slug,
-          nama_lomba: data.nama_lomba,
-          tingkat: data.tingkat,
-          peringkat: data.peringkat,
-          tahun: data.tahun,
-          kategori: data.kategori || null,
-          deskripsi: data.deskripsi || null,
-          
-          // Media
-          thumbnail: data.thumbnail,
-          galeri: data.galeri || [],
-          sertifikat: data.sertifikat || null,
-          sertifikat_public: data.sertifikat_public,
-          
-          // Links
-          link_berita: data.link_berita || null,
-          link_portofolio: data.link_portofolio || null,
-          
-          // Display settings
-          is_featured: data.is_featured,
-          is_published: data.is_published,
-          published_at: new Date(),
-        }
-      })
-
-      // 6. Create calendar event if requested
-      if (data.add_to_calendar && data.tanggal) {
-        const peringkatLabel = data.peringkat.replace('_', ' ').toUpperCase()
-        await tx.calendarEvent.create({
-          data: {
-            title: `🏆 ${peringkatLabel} - ${data.nama_lomba}`,
-            description: data.deskripsi || null,
-            type: 'prestasi',
-            color: '#22c55e', // Green for achievements
-            start_date: new Date(data.tanggal),
-            end_date: null,
-            all_day: true,
-            link: `/prestasi/${slug}`,
-            is_active: true,
-          }
-        })
-      }
-
-      return { submission, prestasi }
     })
+
+    // 2. Create team members if provided
+    if (data.team_members && data.team_members.length > 0) {
+      await prisma.prestasiTeamMember.createMany({
+        data: data.team_members.map(member => ({
+          submission_id: submission.id,
+          nama: member.nama,
+          nim: member.nim,
+          prodi: member.prodi || null,
+          angkatan: member.angkatan || null,
+          whatsapp: member.whatsapp || null,
+          is_ketua: member.is_ketua,
+        }))
+      })
+    }
+
+    // 3. Create pembimbing if provided
+    if (data.pembimbing && data.pembimbing.length > 0) {
+      await prisma.prestasiPembimbing.createMany({
+        data: data.pembimbing.map(p => ({
+          submission_id: submission.id,
+          nama: p.nama,
+          nidn: p.nidn || null,
+          whatsapp: p.whatsapp || null,
+        }))
+      })
+    }
+
+    // 4. Create documents if provided
+    if (data.documents && data.documents.length > 0) {
+      await prisma.prestasiDocument.createMany({
+        data: data.documents.map(doc => ({
+          submission_id: submission.id,
+          type: doc.type,
+          label: doc.label || null,
+          file_path: doc.file_path,
+          file_name: doc.file_name,
+          file_type: doc.file_path.split('.').pop() || 'unknown',
+          file_size: 0, // Size not provided in direct create
+        }))
+      })
+    }
+
+    // 5. Create published Prestasi record
+    const prestasi = await prisma.prestasi.create({
+      data: {
+        submission_id: submission.id,
+        judul: data.judul,
+        slug: slug,
+        nama_lomba: data.nama_lomba,
+        tingkat: data.tingkat,
+        peringkat: data.peringkat,
+        tahun: data.tahun,
+        kategori: data.kategori || null,
+        deskripsi: data.deskripsi || null,
+        
+        // Media
+        thumbnail: data.thumbnail,
+        galeri: data.galeri || [],
+        sertifikat: data.sertifikat || null,
+        sertifikat_public: data.sertifikat_public,
+        
+        // Links
+        link_berita: data.link_berita || null,
+        link_portofolio: data.link_portofolio || null,
+        
+        // Display settings
+        is_featured: data.is_featured,
+        is_published: data.is_published,
+        published_at: new Date(),
+      }
+    })
+
+    // 6. Create calendar event if requested
+    if (data.add_to_calendar && data.tanggal) {
+      const peringkatLabel = data.peringkat.replace('_', ' ').toUpperCase()
+      await prisma.calendarEvent.create({
+        data: {
+          title: `🏆 ${peringkatLabel} - ${data.nama_lomba}`,
+          description: data.deskripsi || null,
+          type: 'prestasi',
+          color: '#22c55e', // Green for achievements
+          start_date: new Date(data.tanggal),
+          end_date: null,
+          all_day: true,
+          link: `/prestasi/${slug}`,
+          is_active: true,
+        }
+      })
+    }
+
+    const result = { submission, prestasi }
 
     // Return success response
     return createdResponse(
