@@ -38,9 +38,12 @@ export async function POST(request: NextRequest) {
 
     // Parse and validate request body
     const body = await request.json()
+    console.log('Prestasi direct create request body:', JSON.stringify(body, null, 2))
+    
     const validation = createPrestasiDirectSchema.safeParse(body)
     
     if (!validation.success) {
+      console.log('Validation errors:', validation.error.issues)
       return validationErrorFromZod(validation.error.issues)
     }
 
@@ -188,8 +191,10 @@ export async function POST(request: NextRequest) {
 
   } catch (error) {
     console.error('Error creating prestasi directly:', error)
+    // Return more detailed error for debugging
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
     return errorResponse(
-      'Gagal membuat prestasi. Silakan coba lagi.',
+      `Gagal membuat prestasi: ${errorMessage}`,
       500
     )
   }

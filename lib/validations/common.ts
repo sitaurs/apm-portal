@@ -51,6 +51,8 @@ export const optionalDateSchema = z.string().nullable().optional().refine(
 export const tingkatEnum = z.enum([
   'internal',
   'universitas',
+  'kampus',
+  'kota',
   'regional', 
   'provinsi',
   'nasional',
