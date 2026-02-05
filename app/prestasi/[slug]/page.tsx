@@ -19,23 +19,63 @@ import {
   FileText,
 } from 'lucide-react';
 import { PrestasiActions } from './PrestasiActions';
+import { prisma } from '@/lib/prisma/client';
 
 async function getPrestasiBySlug(slug: string) {
   try {
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
-    // Fetch from API with slug parameter
-    const res = await fetch(`${baseUrl}/api/prestasi?slug=${slug}`, {
-      cache: 'no-store',
-      next: { revalidate: 60 },
+    const prestasi = await prisma.prestasi.findUnique({
+      where: { slug, is_published: true },
+      include: {
+        submission: {
+          include: {
+            team_members: true,
+            pembimbing: true,
+            documents: true,
+          }
+        }
+      }
     });
+    
+    if (!prestasi) return null;
 
-    if (!res.ok) {
-      return null;
-    }
-
-    const data = await res.json();
-    // API returns array, get first match
-    return data.data?.[0] || null;
+    // Get submission data
+    const submission = prestasi.submission;
+    
+    return {
+      id: prestasi.id,
+      slug: prestasi.slug,
+      judul: prestasi.judul,
+      nama_lomba: prestasi.nama_lomba,
+      penyelenggara: submission?.penyelenggara || 'Belum diisi',
+      peringkat: prestasi.peringkat,
+      tingkat: prestasi.tingkat,
+      kategori: prestasi.kategori || 'Umum',
+      tahun: prestasi.tahun,
+      tanggal_lomba: submission?.tanggal?.toISOString() || null,
+      lokasi: 'Belum diisi',
+      deskripsi: prestasi.deskripsi || 'Belum ada deskripsi lengkap.',
+      proyek_data: null,
+      tim_mahasiswa: submission?.team_members?.map(m => ({
+        nama: m.nama,
+        nim: m.nim,
+        prodi: m.prodi || '',
+        angkatan: m.angkatan || '',
+        is_ketua: m.is_ketua,
+      })) || [],
+      pembimbing_data: submission?.pembimbing?.[0] ? {
+        nama: submission.pembimbing[0].nama,
+        nidn: submission.pembimbing[0].nidn || '',
+        whatsapp: submission.pembimbing[0].whatsapp || '',
+      } : null,
+      prodi: submission?.team_members?.[0]?.prodi || 'Belum diisi',
+      galeri: Array.isArray(prestasi.galeri) ? prestasi.galeri : [],
+      dokumentasi_files: submission?.documents?.filter(d => d.type === 'dokumentasi').map(d => d.file_path) || [],
+      sertifikat_file: prestasi.sertifikat_public ? prestasi.sertifikat : null,
+      sumber_berita: '',
+      link_berita: prestasi.link_berita || '',
+      link_portofolio: prestasi.link_portofolio || '',
+      thumbnail: prestasi.thumbnail,
+    };
   } catch (error) {
     console.error('Error fetching prestasi:', error);
     return null;
@@ -44,22 +84,28 @@ async function getPrestasiBySlug(slug: string) {
 
 async function getRelatedPrestasi(currentId: number, tingkat: string, limit = 3) {
   try {
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
-    // Fetch related prestasi with same tingkat, exclude current
-    const res = await fetch(`${baseUrl}/api/prestasi?tingkat=${tingkat.toLowerCase()}&limit=${limit + 1}`, {
-      cache: 'no-store',
-      next: { revalidate: 300 }, // 5 min cache for related
+    const related = await prisma.prestasi.findMany({
+      where: {
+        is_published: true,
+        tingkat: tingkat,
+        id: { not: currentId },
+      },
+      take: limit,
+      orderBy: { published_at: 'desc' },
     });
 
-    if (!res.ok) {
-      return [];
-    }
-
-    const data = await res.json();
-    // Filter out current prestasi
-    return (data.data || [])
-      .filter((p: any) => p.id !== currentId)
-      .slice(0, limit);
+    return related.map(p => ({
+      id: p.id,
+      slug: p.slug,
+      title: p.judul,
+      namaLomba: p.nama_lomba,
+      peringkat: p.peringkat,
+      tingkat: p.tingkat,
+      tahun: p.tahun.toString(),
+      kategori: p.kategori || '',
+      isVerified: true,
+      foto: p.thumbnail || (Array.isArray(p.galeri) && p.galeri.length > 0 ? String(p.galeri[0]) : undefined),
+    }));
   } catch (error) {
     console.error('Error fetching related prestasi:', error);
     return [];
@@ -100,34 +146,25 @@ export default async function PrestasiDetailPage({ params }: { params: { slug: s
     slug: prestasi.slug,
     title: prestasi.judul,
     namaLomba: prestasi.nama_lomba,
-    penyelenggara: prestasi.penyelenggara || 'Belum diisi',
+    penyelenggara: prestasi.penyelenggara,
     peringkat: prestasi.peringkat,
     tingkat: prestasi.tingkat,
     kategori: prestasi.kategori,
     tahun: prestasi.tahun.toString(),
     tanggalLomba: formatTanggal(prestasi.tanggal_lomba),
-    lokasi: prestasi.lokasi || 'Belum diisi',
-    deskripsi: prestasi.deskripsi || 'Belum ada deskripsi lengkap.',
-    proyek: prestasi.proyek_data ? {
-      nama: prestasi.proyek_data.nama || '',
-      deskripsi: prestasi.proyek_data.deskripsi || '',
-      fitur: prestasi.proyek_data.fitur || [],
-      teknologi: prestasi.proyek_data.teknologi || [],
-    } : null,
-    tim: prestasi.tim_mahasiswa || [],
-    pembimbing: prestasi.pembimbing_data ? {
-      nama: prestasi.pembimbing_data.nama || '',
-      nidn: prestasi.pembimbing_data.nidn || '',
-      whatsapp: prestasi.pembimbing_data.whatsapp || '',
-    } : null,
-    prodi: prestasi.prodi || 'Belum diisi',
-    // Galeri from prestasi table (not dokumentasi_files from documents)
-    galeri: prestasi.galeri || [],
-    dokumentasi: prestasi.dokumentasi_files || [],
-    sertifikat: prestasi.sertifikat_file || null,
-    sumberBerita: prestasi.sumber_berita || '',
-    linkBerita: prestasi.link_berita || '',
-    linkPortofolio: prestasi.link_portofolio || '',
+    lokasi: prestasi.lokasi,
+    deskripsi: prestasi.deskripsi,
+    proyek: null as { nama: string; deskripsi: string; fitur: string[]; teknologi: string[] } | null,
+    tim: prestasi.tim_mahasiswa,
+    pembimbing: prestasi.pembimbing_data,
+    prodi: prestasi.prodi,
+    galeri: prestasi.galeri as string[],
+    dokumentasi: prestasi.dokumentasi_files,
+    sertifikat: prestasi.sertifikat_file,
+    sumberBerita: '',
+    linkBerita: prestasi.link_berita,
+    linkPortofolio: prestasi.link_portofolio,
+    thumbnail: prestasi.thumbnail,
   };
   
   const getPeringkatColor = (peringkat: string) => {
@@ -382,7 +419,7 @@ export default async function PrestasiDetailPage({ params }: { params: { slug: s
               {/* Sumber & Download */}
               <PrestasiActions
                 sumberBerita={prestasiDetail.sumberBerita}
-                sertifikat={prestasiDetail.sertifikat}
+                sertifikat={prestasiDetail.sertifikat ?? undefined}
                 linkBerita={prestasiDetail.linkBerita}
                 linkPortofolio={prestasiDetail.linkPortofolio}
                 title={prestasiDetail.title}

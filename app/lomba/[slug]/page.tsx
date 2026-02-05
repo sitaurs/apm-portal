@@ -25,18 +25,49 @@ import {
   Gift,
   CheckCircle
 } from 'lucide-react';
+import { prisma } from '@/lib/prisma/client';
 
 async function getLombaBySlug(slug: string) {
   try {
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
-    const response = await fetch(`${baseUrl}/api/lomba?slug=${slug}`, {
-      next: { revalidate: 60 },
+    const lomba = await prisma.lomba.findUnique({
+      where: { slug, is_deleted: false },
     });
     
-    if (!response.ok) return null;
+    if (!lomba) return null;
+
+    // Parse JSON fields and format data
+    const kontakPanitia = lomba.kontak_panitia as { email?: string; phone?: string; whatsapp?: string } | null;
     
-    const data = await response.json();
-    return data.data?.[0] || null;
+    return {
+      id: lomba.id,
+      slug: lomba.slug,
+      title: lomba.nama_lomba,
+      deadline: lomba.deadline?.toISOString() || null,
+      deadlineDisplay: lomba.deadline 
+        ? new Date(lomba.deadline).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })
+        : 'Belum diisi',
+      kategori: lomba.kategori,
+      tingkat: lomba.tingkat,
+      status: lomba.status,
+      penyelenggara: lomba.penyelenggara || 'Belum diisi',
+      lokasi: lomba.lokasi || 'Belum diisi',
+      biaya: lomba.biaya || 0,
+      peserta: 'Umum',
+      hadiah: typeof lomba.hadiah === 'string' ? lomba.hadiah : (Array.isArray(lomba.hadiah) ? lomba.hadiah.join(', ') : ''),
+      deskripsi: lomba.deskripsi || 'Belum ada deskripsi lengkap.',
+      syarat_ketentuan: lomba.syarat_ketentuan || '',
+      kontak_panitia: kontakPanitia,
+      kontakEmail: kontakPanitia?.email || '',
+      kontakPhone: kontakPanitia?.phone || '',
+      kontakWhatsapp: kontakPanitia?.whatsapp || '',
+      linkPendaftaran: lomba.link_pendaftaran || '',
+      posterUrl: lomba.poster || null,
+      thumbnail: lomba.thumbnail || null,
+      posters: lomba.posters || [],
+      additionalFields: Array.isArray(lomba.additional_fields) ? lomba.additional_fields : [],
+      tags: Array.isArray(lomba.tags) ? lomba.tags : [],
+      tipe_pendaftaran: lomba.tipe_pendaftaran || 'internal',
+    };
   } catch (error) {
     console.error('Error fetching lomba:', error);
     return null;
@@ -59,23 +90,23 @@ export default async function LombaDetailPage({ params }: { params: { slug: stri
     kategori: lomba.kategori,
     tingkat: lomba.tingkat,
     status: lomba.status,
-    penyelenggara: lomba.penyelenggara || 'Belum diisi',
-    lokasi: lomba.lokasi || 'Belum diisi',
-    biaya: lomba.biaya || 0,
-    peserta: lomba.peserta || 'Belum diisi',
-    hadiah: lomba.hadiah || '',
-    deskripsi: lomba.deskripsi || 'Belum ada deskripsi lengkap.',
-    syarat: lomba.syarat_ketentuan || lomba.syaratKetentuan || '',
-    kontakEmail: lomba.kontak_panitia?.email || lomba.kontakEmail || '',
-    kontakPhone: lomba.kontak_panitia?.phone || lomba.kontakPhone || '',
-    kontakWhatsapp: lomba.kontak_panitia?.whatsapp || '',
-    linkPendaftaran: lomba.linkPendaftaran || '',
+    penyelenggara: lomba.penyelenggara,
+    lokasi: lomba.lokasi,
+    biaya: lomba.biaya,
+    peserta: lomba.peserta,
+    hadiah: lomba.hadiah,
+    deskripsi: lomba.deskripsi,
+    syarat: lomba.syarat_ketentuan,
+    kontakEmail: lomba.kontakEmail,
+    kontakPhone: lomba.kontakPhone,
+    kontakWhatsapp: lomba.kontakWhatsapp,
+    linkPendaftaran: lomba.linkPendaftaran,
     posterUrl: lomba.posterUrl,
-    thumbnail: lomba.thumbnail || null,
-    posters: Array.isArray(lomba.posters) ? lomba.posters : [],
-    additionalFields: Array.isArray(lomba.additionalFields) ? lomba.additionalFields : (lomba.additionalFields ? Object.entries(lomba.additionalFields).map(([label, value]) => ({ label, value })) : []),
-    tags: Array.isArray(lomba.tags) ? lomba.tags : [],
-    tipePendaftaran: lomba.tipePendaftaran || lomba.tipe_pendaftaran || 'internal',
+    thumbnail: lomba.thumbnail,
+    posters: lomba.posters,
+    additionalFields: lomba.additionalFields,
+    tags: lomba.tags,
+    tipePendaftaran: lomba.tipe_pendaftaran,
   };
 
   return (
@@ -131,7 +162,11 @@ export default async function LombaDetailPage({ params }: { params: { slug: stri
                   <Clock className="w-5 h-5" />
                   <span className="font-medium">Deadline Pendaftaran</span>
                 </div>
-                <Countdown targetDate={lombaDetail.deadline} size="sm" />
+                {lombaDetail.deadline ? (
+                  <Countdown targetDate={lombaDetail.deadline} size="sm" />
+                ) : (
+                  <p className="text-text-muted">Belum ada deadline</p>
+                )}
               </div>
 
               {/* Quick Info */}
@@ -248,7 +283,7 @@ export default async function LombaDetailPage({ params }: { params: { slug: stri
               {/* Poster Utama dengan Lightbox */}
               {(lombaDetail.thumbnail || lombaDetail.posterUrl) && (
                 <ThumbnailViewer 
-                  imageUrl={lombaDetail.thumbnail || lombaDetail.posterUrl} 
+                  imageUrl={(lombaDetail.thumbnail || lombaDetail.posterUrl) as string} 
                   title={lombaDetail.title}
                 />
               )}
@@ -316,7 +351,7 @@ export default async function LombaDetailPage({ params }: { params: { slug: stri
                 <div className="bg-white rounded-xl shadow-card p-6">
                   <h3 className="font-semibold text-text-main mb-3">Tags</h3>
                   <div className="flex flex-wrap gap-2">
-                    {lombaDetail.tags.map((tag: string) => (
+                    {(lombaDetail.tags as string[]).map((tag) => (
                       <Badge key={tag} variant="outline">{tag}</Badge>
                     ))}
                   </div>
