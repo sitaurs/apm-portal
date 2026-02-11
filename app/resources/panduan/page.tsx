@@ -8,29 +8,23 @@ export const metadata: Metadata = {
     description: 'Panduan lengkap cara mencari dan mendaftar lomba melalui APM',
 };
 
-const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
-
 interface Step {
     step: number;
     title: string;
     description: string;
 }
 
-async function getPanduan(): Promise<Step[]> {
-    try {
-        const res = await fetch(`${BASE_URL}/api/panduan?type=lomba`, {
-            next: { revalidate: 60 },
-        });
-        if (!res.ok) return [];
-        const data = await res.json();
-        return data.data || [];
-    } catch {
-        return [];
-    }
-}
+// Static panduan data
+const staticSteps: Step[] = [
+    { step: 1, title: 'Buka Portal APM', description: 'Akses portal APM melalui website resmi Polinema' },
+    { step: 2, title: 'Cari Lomba', description: 'Gunakan fitur pencarian atau filter untuk menemukan lomba yang sesuai' },
+    { step: 3, title: 'Baca Detail Lomba', description: 'Pelajari syarat, ketentuan, dan deadline pendaftaran' },
+    { step: 4, title: 'Daftar Lomba', description: 'Klik tombol daftar dan lengkapi formulir pendaftaran' },
+    { step: 5, title: 'Pantau Status', description: 'Cek status pendaftaran melalui dashboard Anda' },
+];
 
 export default async function PanduanPage() {
-    const steps = await getPanduan();
+    const steps = staticSteps;
 
     return (
         <div className="min-h-screen bg-background">

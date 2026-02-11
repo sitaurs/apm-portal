@@ -1,6 +1,10 @@
 import { Metadata } from 'next';
 import PrestasiPageClient from './PrestasiPageClient';
+import { prisma } from '@/lib/prisma/client';
 import type { PrestasiItem } from '@/hooks/useData';
+
+export const dynamic = 'force-dynamic';
+export const revalidate = 60;
 
 export const metadata: Metadata = {
   title: 'Prestasi & Pencapaian | APM Portal',
@@ -9,19 +13,26 @@ export const metadata: Metadata = {
 
 async function getPrestasiData() {
   try {
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
-    const res = await fetch(`${baseUrl}/api/prestasi?limit=100`, {
-      cache: 'no-store', // Always get fresh data
-      next: { revalidate: 60 }, // Revalidate every 60 seconds
+    const data = await prisma.prestasi.findMany({
+      where: {
+        is_published: true,
+      },
+      orderBy: { published_at: 'desc' },
+      take: 100,
     });
 
-    if (!res.ok) {
-      console.error('Failed to fetch prestasi:', res.status);
-      return [];
-    }
-
-    const data = await res.json();
-    return data.data || [];
+    return data.map((item) => ({
+      id: String(item.id),
+      slug: item.slug,
+      title: item.judul,
+      namaLomba: item.nama_lomba,
+      peringkat: item.peringkat,
+      tingkat: item.tingkat,
+      tahun: item.tahun?.toString() || new Date().getFullYear().toString(),
+      kategori: item.kategori || '',
+      isVerified: true,
+      foto: item.thumbnail || (Array.isArray(item.galeri) && item.galeri.length > 0 ? String(item.galeri[0]) : undefined),
+    }));
   } catch (error) {
     console.error('Error fetching prestasi:', error);
     return [];

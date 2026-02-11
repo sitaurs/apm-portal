@@ -37,21 +37,40 @@ interface ResourceDetail {
   file_size?: string;
 }
 
+// Static resources data (no database table for this yet)
+const staticResources: ResourceDetail[] = [
+  {
+    id: '1',
+    slug: 'template-proposal-lomba',
+    judul: 'Template Proposal Lomba',
+    deskripsi: 'Template proposal standar untuk mengikuti berbagai lomba dan kompetisi',
+    konten: 'Template ini berisi format standar proposal yang dapat digunakan untuk berbagai jenis lomba dan kompetisi.',
+    kategori: 'Template',
+    tags: ['proposal', 'lomba', 'template'],
+    file_size: '500 KB',
+  },
+  {
+    id: '2',
+    slug: 'panduan-submit-prestasi',
+    judul: 'Panduan Submit Prestasi',
+    deskripsi: 'Cara melaporkan prestasi yang telah diraih melalui portal APM',
+    konten: 'Panduan lengkap untuk melaporkan prestasi melalui portal APM Polinema.',
+    kategori: 'Panduan',
+    tags: ['prestasi', 'panduan', 'submit'],
+  },
+  {
+    id: '3',
+    slug: 'tips-presentasi',
+    judul: 'Tips Presentasi yang Efektif',
+    deskripsi: 'Tips dan trik untuk presentasi yang memukau di lomba',
+    konten: 'Kumpulan tips presentasi efektif untuk memenangkan lomba.',
+    kategori: 'Tips & Trik',
+    tags: ['presentasi', 'tips'],
+  },
+];
+
 async function getResourceBySlug(slug: string): Promise<ResourceDetail | null> {
-  try {
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
-    const res = await fetch(`${baseUrl}/api/resources?slug=${slug}`, {
-      next: { revalidate: 60 },
-    });
-    
-    if (!res.ok) return null;
-    
-    const data = await res.json();
-    return data.data?.[0] || null;
-  } catch (error) {
-    console.error('Error fetching resource:', error);
-    return null;
-  }
+  return staticResources.find(r => r.slug === slug) || null;
 }
 
 const getIconForCategory = (kategori: string) => {

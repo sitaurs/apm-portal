@@ -8,8 +8,6 @@ export const metadata: Metadata = {
     description: 'Tips dan strategi untuk meningkatkan peluang menang lomba',
 };
 
-const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
-
 interface Tip {
     id: string;
     title: string;
@@ -28,21 +26,18 @@ const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
     lightbulb: Lightbulb,
 };
 
-async function getTips(): Promise<Tip[]> {
-    try {
-        const res = await fetch(`${BASE_URL}/api/tips`, {
-            next: { revalidate: 60 },
-        });
-        if (!res.ok) return [];
-        const data = await res.json();
-        return data.data || [];
-    } catch {
-        return [];
-    }
-}
+// Static tips data
+const staticTips: Tip[] = [
+    { id: '1', title: 'Tentukan Target', description: 'Pilih lomba yang sesuai dengan kemampuan dan minat Anda', icon: 'target', order: 1 },
+    { id: '2', title: 'Riset Mendalam', description: 'Pelajari kriteria penilaian dan pemenang sebelumnya', icon: 'search', order: 2 },
+    { id: '3', title: 'Bangun Tim Solid', description: 'Pilih anggota tim yang saling melengkapi', icon: 'users', order: 3 },
+    { id: '4', title: 'Manajemen Waktu', description: 'Buat jadwal persiapan yang realistis', icon: 'clock', order: 4 },
+    { id: '5', title: 'Latihan Presentasi', description: 'Latih kemampuan komunikasi dan presentasi', icon: 'mic', order: 5 },
+    { id: '6', title: 'Konsultasi Dosen', description: 'Minta masukan dari dosen pembimbing', icon: 'message-circle', order: 6 },
+];
 
 export default async function TipsPage() {
-    const tips = await getTips();
+    const tips = staticTips;
 
     return (
         <div className="min-h-screen bg-background">

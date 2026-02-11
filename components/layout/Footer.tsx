@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { Facebook, Instagram, Twitter, Youtube, Mail, Phone, MapPin } from 'lucide-react';
+import { Instagram, Twitter, Youtube, Phone } from 'lucide-react';
 import { socialLinks, contactInfo } from '@/lib/constants';
 
 const footerLinks = {
@@ -109,29 +109,29 @@ export function Footer() {
 
           {/* Contact Info */}
           <div>
-            <h4 className="font-semibold mb-4">Contact Info</h4>
+            <h4 className="font-semibold mb-4">Hubungi Kami</h4>
             <ul className="space-y-3">
               <li className="flex items-start gap-3 text-sm">
-                <Mail className="w-4 h-4 mt-0.5 text-white/50" />
+                <Phone className="w-4 h-4 mt-0.5 text-white/50" />
                 <a
-                  href={`mailto:${contactInfo.email}`}
+                  href="https://wa.me/6281252460190"
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="text-white/70 hover:text-white transition-colors"
                 >
-                  {contactInfo.email}
+                  {contactInfo.whatsapp1}
                 </a>
               </li>
               <li className="flex items-start gap-3 text-sm">
                 <Phone className="w-4 h-4 mt-0.5 text-white/50" />
                 <a
-                  href={`tel:${contactInfo.phone}`}
+                  href="https://wa.me/6287853462867"
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="text-white/70 hover:text-white transition-colors"
                 >
-                  {contactInfo.phone}
+                  {contactInfo.whatsapp2}
                 </a>
-              </li>
-              <li className="flex items-start gap-3 text-sm">
-                <MapPin className="w-4 h-4 mt-0.5 text-white/50" />
-                <span className="text-white/70">{contactInfo.address}</span>
               </li>
             </ul>
           </div>

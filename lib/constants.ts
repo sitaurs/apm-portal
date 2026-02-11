@@ -178,7 +178,6 @@ export const socialLinks = {
 
 // Contact info
 export const contactInfo = {
-  email: 'apm@polinema.ac.id',
-  phone: '+62 341 404424',
-  address: 'Jl. Soekarno Hatta No.9, Malang, Jawa Timur',
+  whatsapp1: '+62 812-5246-0190',
+  whatsapp2: '+62 878-5346-2867',
 } as const;

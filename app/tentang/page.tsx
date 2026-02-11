@@ -7,39 +7,16 @@ import {
   Avatar
 } from '@/components/ui';
 import { 
-  Trophy, 
   Users, 
   Target, 
   Lightbulb,
   Heart,
   Star,
-  Mail,
   Phone,
-  MapPin,
-  ExternalLink,
   ChevronDown,
-  Award,
   Building2,
   GraduationCap
 } from 'lucide-react';
-
-// Stats
-const stats = [
-  { value: '256+', label: 'Total Prestasi', icon: Trophy },
-  { value: '89', label: 'Juara 1', icon: Award },
-  { value: '1000+', label: 'Mahasiswa Terlibat', icon: Users },
-  { value: '50+', label: 'Mitra & Partner', icon: Building2 },
-];
-
-// Team members
-const teamMembers = [
-  { nama: 'Dr. Ir. Ahmad Suherman, M.T.', jabatan: 'Ketua APM', fakultas: 'Rektorat', foto: null },
-  { nama: 'Budi Santoso, S.Kom., M.Kom.', jabatan: 'Sekretaris', fakultas: 'FTE', foto: null },
-  { nama: 'Citra Dewi, S.Pd., M.Pd.', jabatan: 'Koordinator Lomba', fakultas: 'FKB', foto: null },
-  { nama: 'Diana Pratiwi, S.T., M.T.', jabatan: 'Koordinator Prestasi', fakultas: 'FIF', foto: null },
-  { nama: 'Eko Prasetyo, S.E., M.M.', jabatan: 'Koordinator Expo', fakultas: 'FEB', foto: null },
-  { nama: 'Fitria Rahma, S.Ds., M.Ds.', jabatan: 'Desain & Media', fakultas: 'FIK', foto: null },
-];
 
 // Values
 const values = [
@@ -111,7 +88,7 @@ export default function AboutPage() {
               Portal Ajang Prestasi Mahasiswa
             </h1>
             <p className="text-xl text-white/80 mb-6">
-              Mendukung dan memfasilitasi mahasiswa Politeknik Negeri Malang untuk berprestasi di tingkat nasional dan internasional.
+              Mendukung dan memfasilitasi mahasiswa D4 Teknik Telekomunikasi Politeknik Negeri Malang untuk berprestasi di tingkat nasional dan internasional.
             </p>
             <div className="flex flex-wrap gap-3">
               <Button variant="secondary" className="bg-white text-primary hover:bg-gray-100">
@@ -122,19 +99,6 @@ export default function AboutPage() {
               </Button>
             </div>
           </div>
-        </div>
-      </div>
-
-      {/* Stats */}
-      <div className="container-apm -mt-8 relative z-20">
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          {stats.map((stat) => (
-            <div key={stat.label} className="bg-white rounded-xl shadow-card p-6 text-center">
-              <stat.icon className="w-8 h-8 text-primary mx-auto mb-3" />
-              <p className="text-3xl font-bold text-text-main">{stat.value}</p>
-              <p className="text-sm text-text-muted">{stat.label}</p>
-            </div>
-          ))}
         </div>
       </div>
 
@@ -151,28 +115,36 @@ export default function AboutPage() {
               <div className="bg-primary/5 rounded-xl p-6 border-l-4 border-primary">
                 <h3 className="font-semibold text-primary mb-2">Visi</h3>
                 <p className="text-text-muted">
-                  Menjadi pusat pengembangan prestasi mahasiswa terkemuka di Indonesia yang menghasilkan talenta-talenta unggul berdaya saing global.
+                  Menjadi Pusat Ekosistem Prestasi Mahasiswa Telekomunikasi POLINEMA yang Berdaya Saing Nasional dan Internasional.
                 </p>
               </div>
               
               <div className="bg-secondary/5 rounded-xl p-6 border-l-4 border-secondary">
-                <h3 className="font-semibold text-secondary mb-2">Misi</h3>
+                <h3 className="font-semibold text-secondary mb-2">Misi (6 Pilar)</h3>
                 <ul className="space-y-2 text-text-muted">
                   <li className="flex items-start gap-2">
                     <span className="w-5 h-5 rounded-full bg-secondary/20 text-secondary flex items-center justify-center flex-shrink-0 mt-0.5 text-xs">1</span>
-                    Menyediakan informasi komprehensif tentang lomba dan kompetisi
+                    Menyediakan platform informasi dan kurasi lomba akademik berbasis teknologi
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="w-5 h-5 rounded-full bg-secondary/20 text-secondary flex items-center justify-center flex-shrink-0 mt-0.5 text-xs">2</span>
-                    Memfasilitasi pendaftaran dan persiapan lomba
+                    Memfasilitasi dan mendukung proses pendaftaran, pembinaan, dan persiapan lomba
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="w-5 h-5 rounded-full bg-secondary/20 text-secondary flex items-center justify-center flex-shrink-0 mt-0.5 text-xs">3</span>
-                    Mendokumentasikan dan mempromosikan prestasi mahasiswa
+                    Mendokumentasikan dan mempublikasikan prestasi mahasiswa secara transparan
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="w-5 h-5 rounded-full bg-secondary/20 text-secondary flex items-center justify-center flex-shrink-0 mt-0.5 text-xs">4</span>
-                    Membangun jaringan dengan industri dan institusi pendidikan
+                    Membangun kemitraan dengan industri, alumni, dan institusi untuk peningkatan kualitas
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="w-5 h-5 rounded-full bg-secondary/20 text-secondary flex items-center justify-center flex-shrink-0 mt-0.5 text-xs">5</span>
+                    Mengembangkan budaya kompetitif dan inovatif di lingkungan prodi
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="w-5 h-5 rounded-full bg-secondary/20 text-secondary flex items-center justify-center flex-shrink-0 mt-0.5 text-xs">6</span>
+                    Melahirkan talenta yang siap berkontribusi di dunia industri dan masyarakat
                   </li>
                 </ul>
               </div>
@@ -193,30 +165,48 @@ export default function AboutPage() {
         </div>
       </div>
 
-      {/* Team */}
+      {/* Team / Struktur CTA */}
       <div className="bg-white py-16">
         <div className="container-apm">
-          <div className="text-center mb-12">
-            <Badge variant="secondary" className="mb-4">Tim Kami</Badge>
+          <div className="max-w-3xl mx-auto text-center">
+            <Badge variant="secondary" className="mb-4">Struktur Organisasi</Badge>
             <h2 className="text-2xl lg:text-3xl font-bold text-text-main mb-4">
-              Tim Pengelola APM
+              Tim Pengurus APM Telekomunikasi
             </h2>
-            <p className="text-text-muted max-w-2xl mx-auto">
-              Tim yang berdedikasi untuk mendukung prestasi mahasiswa Politeknik Negeri Malang
+            <p className="text-text-muted mb-8">
+              APM dikelola oleh tim pengurus yang terdiri dari Dewan Pembina (Dosen), 
+              Badan Pengurus Harian (BPH), dan 5 Divisi Operasional.
             </p>
-          </div>
-          
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
-            {teamMembers.map((member) => (
-              <div key={member.nama} className="text-center group">
-                <div className="w-24 h-24 mx-auto mb-4 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white text-2xl font-bold group-hover:scale-105 transition-transform">
-                  {member.nama.split(' ').map(n => n[0]).slice(0, 2).join('')}
+            
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+              <div className="bg-gray-50 rounded-xl p-6">
+                <div className="w-12 h-12 rounded-full bg-gray-600 mx-auto mb-3 flex items-center justify-center">
+                  <GraduationCap className="w-6 h-6 text-white" />
                 </div>
-                <h3 className="font-semibold text-text-main text-sm">{member.nama}</h3>
-                <p className="text-xs text-primary font-medium">{member.jabatan}</p>
-                <p className="text-xs text-text-muted">{member.fakultas}</p>
+                <h3 className="font-semibold text-text-main">Dewan Pembina</h3>
+                <p className="text-sm text-text-muted">2 Dosen Pembimbing</p>
               </div>
-            ))}
+              <div className="bg-primary/5 rounded-xl p-6">
+                <div className="w-12 h-12 rounded-full bg-primary mx-auto mb-3 flex items-center justify-center">
+                  <Users className="w-6 h-6 text-white" />
+                </div>
+                <h3 className="font-semibold text-text-main">BPH</h3>
+                <p className="text-sm text-text-muted">Ketua, Wakil, Sekretaris, Bendahara</p>
+              </div>
+              <div className="bg-accent/5 rounded-xl p-6">
+                <div className="w-12 h-12 rounded-full bg-accent mx-auto mb-3 flex items-center justify-center">
+                  <Building2 className="w-6 h-6 text-white" />
+                </div>
+                <h3 className="font-semibold text-text-main">Divisi</h3>
+                <p className="text-sm text-text-muted">5 Divisi Operasional</p>
+              </div>
+            </div>
+            
+            <Link href="/tentang/struktur">
+              <Button variant="primary">
+                Lihat Struktur Lengkap
+              </Button>
+            </Link>
           </div>
         </div>
       </div>
@@ -262,29 +252,23 @@ export default function AboutPage() {
             </p>
             
             <div className="flex flex-wrap justify-center gap-6 mb-8">
-              <a href="mailto:apm@polinema.ac.id" className="flex items-center gap-2 text-white/90 hover:text-white">
-                <Mail className="w-5 h-5" />
-                apm@polinema.ac.id
-              </a>
-              <a href="tel:+62227564108" className="flex items-center gap-2 text-white/90 hover:text-white">
+              <a href="https://wa.me/6281252460190" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-white/90 hover:text-white">
                 <Phone className="w-5 h-5" />
-                +62 22 7564108
+                +62 812-5246-0190
               </a>
-              <span className="flex items-center gap-2 text-white/90">
-                <MapPin className="w-5 h-5" />
-                Gedung JTI Polinema Lt. 5, Polinema Malang
-              </span>
+              <a href="https://wa.me/6287853462867" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-white/90 hover:text-white">
+                <Phone className="w-5 h-5" />
+                +62 878-5346-2867
+              </a>
             </div>
             
             <div className="flex flex-wrap gap-3 justify-center">
-              <Button variant="secondary" className="bg-white text-primary hover:bg-gray-100">
-                <Mail className="w-4 h-4 mr-2" />
-                Kirim Email
-              </Button>
-              <Button variant="ghost" className="text-white border-white hover:bg-white/10">
-                <ExternalLink className="w-4 h-4 mr-2" />
-                Kunjungi Kantor
-              </Button>
+              <a href="https://wa.me/6281252460190" target="_blank" rel="noopener noreferrer">
+                <Button variant="secondary" className="bg-white text-primary hover:bg-gray-100">
+                  <Phone className="w-4 h-4 mr-2" />
+                  Chat WhatsApp
+                </Button>
+              </a>
             </div>
           </div>
         </div>

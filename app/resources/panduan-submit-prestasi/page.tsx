@@ -8,29 +8,23 @@ export const metadata: Metadata = {
     description: 'Panduan lengkap cara melaporkan prestasi yang sudah diraih',
 };
 
-const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
-
 interface Step {
     step: number;
     title: string;
     description: string;
 }
 
-async function getPanduan(): Promise<Step[]> {
-    try {
-        const res = await fetch(`${BASE_URL}/api/panduan?type=prestasi`, {
-            next: { revalidate: 60 },
-        });
-        if (!res.ok) return [];
-        const data = await res.json();
-        return data.data || [];
-    } catch {
-        return [];
-    }
-}
+// Static panduan data
+const staticSteps: Step[] = [
+    { step: 1, title: 'Login ke Portal', description: 'Masuk ke portal APM menggunakan akun Polinema' },
+    { step: 2, title: 'Akses Menu Prestasi', description: 'Pilih menu Submit Prestasi dari dashboard' },
+    { step: 3, title: 'Isi Form Prestasi', description: 'Lengkapi informasi prestasi: nama lomba, tingkat, hasil, dan tanggal' },
+    { step: 4, title: 'Upload Bukti', description: 'Unggah sertifikat, foto, atau bukti prestasi lainnya' },
+    { step: 5, title: 'Submit & Verifikasi', description: 'Kirim form dan tunggu verifikasi dari admin APM' },
+];
 
 export default async function PanduanSubmitPrestasiPage() {
-    const steps = await getPanduan();
+    const steps = staticSteps;
 
     return (
         <div className="min-h-screen bg-background">

@@ -11,28 +11,36 @@ interface Resource {
   is_featured?: boolean;
 }
 
-async function getResourcesData(): Promise<Resource[]> {
-  try {
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
-    const res = await fetch(`${baseUrl}/api/resources?limit=100`, {
-      next: { revalidate: 60 },
-    });
-    
-    if (!res.ok) {
-      console.error('Failed to fetch resources');
-      return [];
-    }
-    
-    const data = await res.json();
-    return data.data || [];
-  } catch (error) {
-    console.error('Error fetching resources:', error);
-    return [];
-  }
-}
+// Static resources data (no database table for this yet)
+const staticResources: Resource[] = [
+  {
+    id: '1',
+    slug: 'template-proposal-lomba',
+    judul: 'Template Proposal Lomba',
+    deskripsi: 'Template proposal standar untuk mengikuti berbagai lomba dan kompetisi',
+    kategori: 'Template',
+    is_featured: true,
+    tags: ['proposal', 'lomba', 'template'],
+  },
+  {
+    id: '2',
+    slug: 'panduan-submit-prestasi',
+    judul: 'Panduan Submit Prestasi',
+    deskripsi: 'Cara melaporkan prestasi yang telah diraih melalui portal APM',
+    kategori: 'Panduan',
+    is_featured: true,
+    tags: ['prestasi', 'panduan', 'submit'],
+  },
+  {
+    id: '3',
+    slug: 'tips-presentasi',
+    judul: 'Tips Presentasi yang Efektif',
+    deskripsi: 'Tips dan trik untuk presentasi yang memukau di lomba',
+    kategori: 'Tips & Trik',
+    tags: ['presentasi', 'tips'],
+  },
+];
 
 export default async function ResourcesPage() {
-  const resources = await getResourcesData();
-  
-  return <ResourcesPageClient initialResources={resources} />;
+  return <ResourcesPageClient initialResources={staticResources} />;
 }

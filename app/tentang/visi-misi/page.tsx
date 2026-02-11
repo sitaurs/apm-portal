@@ -1,177 +1,64 @@
-'use client';
-
-import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Breadcrumb, Badge, Button } from '@/components/ui';
 import {
     Target,
-    Lightbulb,
     Heart,
     Star,
     Rocket,
     Users,
     Globe,
     Award,
-    TrendingUp,
     Sparkles,
-    CheckCircle2,
     ArrowRight,
     Trophy,
     GraduationCap,
     Zap,
     Shield,
     Eye,
-    Compass,
-    Flag,
-    Mountain
+    Compass
 } from 'lucide-react';
-
-// Nilai-nilai Inti
-const coreValues = [
-    {
-        icon: Star,
-        title: 'Keunggulan',
-        subtitle: 'Excellence',
-        description: 'Selalu berusaha mencapai standar tertinggi dalam setiap kegiatan dan pencapaian.',
-        color: 'from-amber-400 to-orange-500',
-        bgColor: 'bg-amber-50',
-        borderColor: 'border-amber-200',
-    },
-    {
-        icon: Lightbulb,
-        title: 'Inovasi',
-        subtitle: 'Innovation',
-        description: 'Mendorong kreativitas dan pemikiran baru untuk memecahkan masalah kompleks.',
-        color: 'from-blue-400 to-indigo-500',
-        bgColor: 'bg-blue-50',
-        borderColor: 'border-blue-200',
-    },
-    {
-        icon: Users,
-        title: 'Kolaborasi',
-        subtitle: 'Collaboration',
-        description: 'Membangun kerjasama yang kuat antar mahasiswa, dosen, dan mitra industri.',
-        color: 'from-emerald-400 to-teal-500',
-        bgColor: 'bg-emerald-50',
-        borderColor: 'border-emerald-200',
-    },
-    {
-        icon: Heart,
-        title: 'Integritas',
-        subtitle: 'Integrity',
-        description: 'Menjunjung tinggi kejujuran dan etika dalam berkarya dan berkompetisi.',
-        color: 'from-rose-400 to-pink-500',
-        bgColor: 'bg-rose-50',
-        borderColor: 'border-rose-200',
-    },
-    {
-        icon: Rocket,
-        title: 'Prestasi',
-        subtitle: 'Achievement',
-        description: 'Berorientasi pada hasil dan pencapaian nyata di tingkat nasional dan internasional.',
-        color: 'from-purple-400 to-violet-500',
-        bgColor: 'bg-purple-50',
-        borderColor: 'border-purple-200',
-    },
-    {
-        icon: Globe,
-        title: 'Berdampak',
-        subtitle: 'Impactful',
-        description: 'Menciptakan karya yang memberikan manfaat nyata bagi masyarakat dan bangsa.',
-        color: 'from-cyan-400 to-blue-500',
-        bgColor: 'bg-cyan-50',
-        borderColor: 'border-cyan-200',
-    },
-];
 
 // Misi Points
 const misiPoints = [
     {
         number: '01',
-        title: 'Informasi Komprehensif',
-        description: 'Menyediakan informasi lengkap dan terkini tentang lomba, kompetisi, dan peluang pengembangan diri di tingkat lokal, nasional, dan internasional.',
+        title: 'Sistem Informasi Terintegrasi',
+        description: 'Menciptakan sistem informasi terintegrasi tentang kompetisi dan peluang prestasi yang lengkap, terkini, dan mudah diakses.',
         icon: Compass,
     },
     {
         number: '02',
-        title: 'Fasilitasi & Pembinaan',
-        description: 'Memfasilitasi pendaftaran lomba dan memberikan pembinaan intensif kepada mahasiswa untuk memaksimalkan potensi dan peluang kemenangan.',
-        icon: Shield,
+        title: 'Partisipasi Aktif',
+        description: 'Meningkatkan partisipasi aktif mahasiswa Telekomunikasi POLINEMA di ajang bergengsi tingkat nasional dan internasional.',
+        icon: Rocket,
     },
     {
         number: '03',
-        title: 'Dokumentasi & Apresiasi',
-        description: 'Mendokumentasikan dan mempublikasikan setiap prestasi mahasiswa sebagai bentuk apresiasi dan inspirasi bagi generasi selanjutnya.',
+        title: 'Database Prestasi',
+        description: 'Membangun database prestasi yang komprehensif dan terverifikasi sebagai dokumentasi dan apresiasi pencapaian mahasiswa.',
         icon: Award,
     },
     {
         number: '04',
-        title: 'Jaringan & Kemitraan',
-        description: 'Membangun jaringan kerjasama yang luas dengan industri, institusi pendidikan, dan organisasi untuk membuka lebih banyak peluang.',
-        icon: Users,
+        title: 'Budaya Kompetitif',
+        description: 'Mengembangkan budaya kompetitif yang sehat dan kolaboratif untuk memaksimalkan potensi dan peluang kemenangan.',
+        icon: Shield,
     },
     {
         number: '05',
-        title: 'Pengembangan Talenta',
-        description: 'Mengembangkan program pelatihan dan mentorship untuk meningkatkan hard skill dan soft skill mahasiswa secara berkelanjutan.',
+        title: 'Pendampingan & Resources',
+        description: 'Memfasilitasi mahasiswa dengan pendampingan intensif dan resources yang memadai untuk persiapan lomba dan pengembangan diri.',
         icon: GraduationCap,
     },
-];
-
-// Tujuan Strategis
-const strategicGoals = [
     {
-        target: '500+',
-        label: 'Prestasi per tahun',
-        description: 'Target pencapaian prestasi tahunan',
-        icon: Trophy
-    },
-    {
-        target: '100+',
-        label: 'Lomba terfasilitasi',
-        description: 'Lomba yang diikuti setiap tahun',
-        icon: Flag
-    },
-    {
-        target: '50+',
-        label: 'Mitra industri',
-        description: 'Partner dan sponsor kegiatan',
-        icon: Users
-    },
-    {
-        target: 'Top 5',
-        label: 'Politeknik terbaik',
-        description: 'Ranking prestasi kemahasiswaan',
-        icon: Mountain
+        number: '06',
+        title: 'Jejaring Alumni',
+        description: 'Membentuk jejaring alumni berprestasi sebagai mentor dan inspirator untuk membuka lebih banyak peluang bagi generasi selanjutnya.',
+        icon: Users,
     },
 ];
-
-// Animated Counter Component
-function AnimatedCounter({ target, duration = 2000 }: { target: string; duration?: number }) {
-    const [count, setCount] = useState(0);
-    const numericTarget = parseInt(target.replace(/\D/g, '')) || 0;
-    const suffix = target.replace(/[0-9]/g, '');
-
-    useEffect(() => {
-        if (numericTarget === 0) return;
-
-        let startTime: number;
-        const animate = (currentTime: number) => {
-            if (!startTime) startTime = currentTime;
-            const progress = Math.min((currentTime - startTime) / duration, 1);
-            setCount(Math.floor(progress * numericTarget));
-            if (progress < 1) {
-                requestAnimationFrame(animate);
-            }
-        };
-        requestAnimationFrame(animate);
-    }, [numericTarget, duration]);
-
-    return <span>{numericTarget > 0 ? count : ''}{suffix}</span>;
-}
 
 export default function VisiMisiPage() {
-    const [activeValue, setActiveValue] = useState(0);
 
     return (
         <div className="min-h-screen bg-gray-50">
@@ -198,11 +85,10 @@ export default function VisiMisiPage() {
                     </div>
                 </div>
 
-                {/* Content */}
                 <div className="container-apm py-20 relative z-10">
                     <Breadcrumb
                         items={[
-                            { label: 'Tentang', href: '/about' },
+                            { label: 'Tentang', href: '/tentang' },
                             { label: 'Visi & Misi' }
                         ]}
                         className="text-white/70 [&_a]:text-white/70 [&_a:hover]:text-white mb-8"
@@ -278,11 +164,11 @@ export default function VisiMisiPage() {
                                 <Eye className="w-3 h-3 mr-1" /> Visi Kami
                             </Badge>
                             <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-6 leading-tight">
-                                Menjadi Pusat Pengembangan Prestasi Mahasiswa Terkemuka di Indonesia
+                                Menjadi Pusat Ekosistem Prestasi Mahasiswa Telekomunikasi POLINEMA yang Berdaya Saing Nasional dan Internasional
                             </h2>
                             <div className="bg-gradient-to-r from-primary/10 to-secondary/10 rounded-2xl p-6 border-l-4 border-primary mb-6">
                                 <p className="text-lg text-gray-700 leading-relaxed">
-                                    Mewujudkan APM Politeknik Negeri Malang sebagai <strong className="text-primary">pusat keunggulan</strong> yang menghasilkan talenta-talenta unggul berdaya saing <strong className="text-secondary">global</strong>, berkontribusi nyata bagi kemajuan bangsa melalui inovasi dan prestasi.
+                                    Mewujudkan APM Telekomunikasi POLINEMA sebagai <strong className="text-primary">pusat ekosistem prestasi</strong> yang menghasilkan talenta-talenta unggul berdaya saing <strong className="text-secondary">nasional dan internasional</strong>, berkontribusi nyata bagi kemajuan bangsa melalui inovasi dan prestasi.
                                 </p>
                             </div>
 
@@ -314,7 +200,7 @@ export default function VisiMisiPage() {
                             <Target className="w-3 h-3 mr-1" /> Misi Kami
                         </Badge>
                         <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-4">
-                            5 Pilar Misi Strategis
+                            6 Pilar Misi Strategis
                         </h2>
                         <p className="text-gray-500 max-w-2xl mx-auto">
                             Langkah-langkah konkret yang kami lakukan untuk mewujudkan visi
@@ -355,83 +241,6 @@ export default function VisiMisiPage() {
                                 </div>
                             ))}
                         </div>
-                    </div>
-                </div>
-            </section>
-
-            {/* Core Values Section */}
-            <section className="container-apm py-20">
-                <div className="text-center mb-16">
-                    <Badge variant="accent" className="mb-4">
-                        <Heart className="w-3 h-3 mr-1" /> Nilai Kami
-                    </Badge>
-                    <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-4">
-                        6 Nilai Inti
-                    </h2>
-                    <p className="text-gray-500 max-w-2xl mx-auto">
-                        Prinsip-prinsip yang menjadi landasan setiap langkah kami
-                    </p>
-                </div>
-
-                {/* Values Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {coreValues.map((value, index) => (
-                        <div
-                            key={index}
-                            className={`group cursor-pointer ${value.bgColor} ${value.borderColor} border rounded-2xl p-6 hover:shadow-xl transition-all duration-300 hover:-translate-y-1`}
-                            onMouseEnter={() => setActiveValue(index)}
-                        >
-                            <div className={`w-14 h-14 rounded-xl bg-gradient-to-br ${value.color} shadow-lg flex items-center justify-center mb-4 group-hover:scale-110 transition-transform`}>
-                                <value.icon className="w-7 h-7 text-white" />
-                            </div>
-                            <div className="flex items-baseline gap-2 mb-2">
-                                <h3 className="text-xl font-bold text-gray-900">{value.title}</h3>
-                                <span className="text-sm text-gray-400 italic">{value.subtitle}</span>
-                            </div>
-                            <p className="text-gray-600 leading-relaxed">
-                                {value.description}
-                            </p>
-                        </div>
-                    ))}
-                </div>
-            </section>
-
-            {/* Strategic Goals Section */}
-            <section className="bg-gradient-to-br from-primary via-primary-600 to-primary-700 py-20 relative overflow-hidden">
-                {/* Background Pattern */}
-                <div className="absolute inset-0 opacity-10">
-                    <div className="absolute top-0 left-0 w-full h-full" style={{
-                        backgroundImage: 'radial-gradient(circle at 2px 2px, white 1px, transparent 0)',
-                        backgroundSize: '40px 40px'
-                    }} />
-                </div>
-
-                <div className="container-apm relative z-10">
-                    <div className="text-center mb-12">
-                        <Badge variant="secondary" className="bg-white/20 text-white border-white/30 mb-4">
-                            <TrendingUp className="w-3 h-3 mr-1" /> Target Strategis
-                        </Badge>
-                        <h2 className="text-3xl lg:text-4xl font-bold text-white mb-4">
-                            Tujuan 2026
-                        </h2>
-                        <p className="text-white/80 max-w-2xl mx-auto">
-                            Target pencapaian yang ingin kami raih bersama
-                        </p>
-                    </div>
-
-                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
-                        {strategicGoals.map((goal, index) => (
-                            <div key={index} className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20 text-center hover:bg-white/20 transition-colors">
-                                <div className="w-14 h-14 rounded-full bg-white/20 flex items-center justify-center mx-auto mb-4">
-                                    <goal.icon className="w-7 h-7 text-white" />
-                                </div>
-                                <p className="text-4xl font-bold text-white mb-2">
-                                    <AnimatedCounter target={goal.target} />
-                                </p>
-                                <p className="text-white font-medium mb-1">{goal.label}</p>
-                                <p className="text-sm text-white/60">{goal.description}</p>
-                            </div>
-                        ))}
                     </div>
                 </div>
             </section>

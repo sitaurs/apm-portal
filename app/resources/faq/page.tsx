@@ -9,8 +9,6 @@ export const metadata: Metadata = {
     description: 'Pertanyaan yang sering diajukan tentang APM dan lomba',
 };
 
-const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
-
 interface FaqItem {
     id: string;
     question: string;
@@ -18,21 +16,17 @@ interface FaqItem {
     order: number;
 }
 
-async function getFaq(): Promise<FaqItem[]> {
-    try {
-        const res = await fetch(`${BASE_URL}/api/faq`, {
-            next: { revalidate: 60 },
-        });
-        if (!res.ok) return [];
-        const data = await res.json();
-        return data.data || [];
-    } catch {
-        return [];
-    }
-}
+// Static FAQ data
+const staticFaqs: FaqItem[] = [
+    { id: '1', question: 'Apa itu APM Polinema?', answer: 'APM (Ajang Prestasi Mahasiswa) adalah unit yang mengelola informasi lomba dan prestasi mahasiswa Telekomunikasi Polinema.', order: 1 },
+    { id: '2', question: 'Bagaimana cara mendaftar lomba?', answer: 'Buka halaman Lomba, pilih kompetisi yang diminati, lalu klik tombol Daftar dan ikuti petunjuk yang ada.', order: 2 },
+    { id: '3', question: 'Bagaimana cara melaporkan prestasi?', answer: 'Akses menu Submit Prestasi, isi formulir dengan lengkap, upload bukti prestasi, lalu submit untuk diverifikasi admin.', order: 3 },
+    { id: '4', question: 'Siapa yang bisa submit prestasi?', answer: 'Semua mahasiswa aktif Telekomunikasi Polinema yang telah meraih prestasi di kompetisi resmi.', order: 4 },
+    { id: '5', question: 'Berapa lama proses verifikasi?', answer: 'Proses verifikasi biasanya memakan waktu 1-3 hari kerja setelah submit.', order: 5 },
+];
 
 export default async function FaqPage() {
-    const faqs = await getFaq();
+    const faqs = staticFaqs;
 
     return (
         <div className="min-h-screen bg-background">

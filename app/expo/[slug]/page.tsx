@@ -13,18 +13,38 @@ import {
   Bookmark,
   Ticket
 } from 'lucide-react';
+import { prisma } from '@/lib/prisma/client';
+
+export const dynamic = 'force-dynamic';
+export const revalidate = 60;
 
 async function getExpoBySlug(slug: string) {
   try {
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
-    const response = await fetch(`${baseUrl}/api/expo?slug=${slug}`, {
-      next: { revalidate: 60 },
+    const expo = await prisma.expo.findFirst({
+      where: {
+        slug: slug,
+        is_deleted: false,
+      },
     });
     
-    if (!response.ok) return null;
+    if (!expo) return null;
     
-    const data = await response.json();
-    return data.data?.[0] || null;
+    return {
+      id: expo.id,
+      slug: expo.slug,
+      title: expo.nama_event,
+      tanggal: expo.tanggal_mulai?.toISOString(),
+      tanggalMulai: expo.tanggal_mulai?.toISOString(),
+      tanggalSelesai: expo.tanggal_selesai?.toISOString(),
+      lokasi: expo.lokasi,
+      status: expo.status,
+      deskripsi: expo.deskripsi,
+      posterUrl: expo.poster,
+      registrationOpen: expo.registration_open,
+      registrationDeadline: expo.registration_deadline?.toISOString(),
+      maxParticipants: expo.max_participants,
+      biayaPartisipasi: expo.biaya_partisipasi,
+    };
   } catch (error) {
     console.error('Error fetching expo:', error);
     return null;
