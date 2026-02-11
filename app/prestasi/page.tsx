@@ -31,7 +31,7 @@ async function getPrestasiData() {
       tahun: item.tahun?.toString() || new Date().getFullYear().toString(),
       kategori: item.kategori || '',
       isVerified: true,
-      foto: item.thumbnail || (Array.isArray(item.galeri) && item.galeri.length > 0 ? String(item.galeri[0]) : undefined),
+      foto: item.thumbnail || (Array.isArray(item.galeri) && item.galeri.length > 0 ? String(item.galeri[0]) : null) || null,
     }));
   } catch (error) {
     console.error('Error fetching prestasi:', error);

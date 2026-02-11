@@ -24,15 +24,12 @@ async function getExpoData() {
       id: String(item.id),
       slug: item.slug,
       title: item.nama_event,
-      tema: item.tema || undefined,
-      deskripsi: item.deskripsi || undefined,
-      tanggalMulai: item.tanggal_mulai?.toISOString(),
-      tanggalSelesai: item.tanggal_selesai?.toISOString(),
+      tanggal: item.tanggal_mulai?.toISOString() || '',
       lokasi: item.lokasi,
-      status: item.status as 'upcoming' | 'ongoing' | 'completed',
-      isFeatured: item.is_featured,
-      poster: item.poster || undefined,
-      registrationOpen: item.registration_open,
+      deskripsiSingkat: item.deskripsi || undefined,
+      status: (item.status === 'completed' ? 'past' : item.status) as 'upcoming' | 'ongoing' | 'past',
+      kategori: item.tema || undefined,
+      posterUrl: item.poster || undefined,
     }));
   } catch (error) {
     console.error('Error fetching expo:', error);

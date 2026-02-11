@@ -27,17 +27,17 @@ async function getLombaData() {
       id: String(item.id),
       slug: item.slug,
       title: item.nama_lomba,
-      deadline: item.deadline?.toISOString() ?? undefined,
+      deadline: item.deadline?.toISOString() ?? null,
       deadlineDisplay: item.deadline
         ? new Date(item.deadline).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })
-        : undefined,
+        : null,
       kategori: item.kategori,
       tingkat: item.tingkat,
       status: item.status as 'open' | 'closed' | 'coming-soon',
       isUrgent: item.is_urgent,
       isFree: item.biaya === 0,
-      image: item.thumbnail || item.poster || undefined,
-      penyelenggara: item.penyelenggara || undefined,
+      posterUrl: item.poster || item.thumbnail || null,
+      thumbnail: item.thumbnail || null,
     }));
   } catch (error) {
     console.error('Error fetching lomba:', error);
