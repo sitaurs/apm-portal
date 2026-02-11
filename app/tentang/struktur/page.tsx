@@ -177,17 +177,12 @@ const strukturOrganisasi = {
             fokus: 'Platform digital',
             icon: Code,
             kepala: {
-                nama: 'Belum Ditentukan',
+                nama: 'Naufal Muhammad Dzaka',
                 jabatan: 'Koordinator Divisi',
                 unit: 'Mahasiswa Telekomunikasi',
                 foto: null,
             },
             anggota: [
-                {
-                    nama: 'Naufal Muhammad Dzaka',
-                    role: 'Frontend Specialist (UI/UX)',
-                    foto: null,
-                },
                 {
                     nama: 'Muhammad Fakhri Zamani',
                     role: 'Backend Specialist (Database)',

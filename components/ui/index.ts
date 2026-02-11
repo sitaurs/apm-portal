@@ -27,3 +27,4 @@ export {
   NoPrestasiFound, 
   NoExpoFound 
 } from './Empty';
+export { RecruitmentPopup } from './RecruitmentPopup';
