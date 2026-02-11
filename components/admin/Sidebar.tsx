@@ -47,6 +47,11 @@ const navItems: NavItem[] = [
     href: '/admin/prestasi',
     icon: Award,
   },
+  {
+    label: 'Pengaturan',
+    href: '/admin/settings',
+    icon: Settings,
+  },
 ];
 
 export function Sidebar() {

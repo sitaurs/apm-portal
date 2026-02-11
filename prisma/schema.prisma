@@ -375,3 +375,20 @@ model CalendarEvent {
   @@index([is_active])
   @@map("apm_calendar_events")
 }
+
+// ============================================
+// SITE SETTINGS
+// ============================================
+
+model SiteSettings {
+  id                    Int       @id @default(1)
+  
+  // Popup Recruitment Settings
+  popup_enabled         Boolean   @default(true)
+  popup_title           String?   @default("Open Recruitment 2026")
+  popup_message         String?   @default("Bergabung dengan Tim APM Polinema!")
+  
+  updated_at            DateTime  @updatedAt
+
+  @@map("apm_site_settings")
+}
