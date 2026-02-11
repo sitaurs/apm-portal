@@ -113,7 +113,7 @@ const strukturOrganisasi = {
                 'Pengarsipan sertifikat/dokumen',
                 'Pelaporan data ke kampus'
             ],
-            warna: 'from-blue-500 to-indigo-600'
+            warna: 'primary'
         },
         {
             nama: 'Divisi Pencarian & Kurasi',
@@ -132,7 +132,7 @@ const strukturOrganisasi = {
                 'Koneksi dengan penyelenggara',
                 'Kategori: Teknologi, Seni, Olahraga, dll'
             ],
-            warna: 'from-amber-500 to-orange-600'
+            warna: 'primary'
         },
         {
             nama: 'Divisi Diseminasi & Media',
@@ -151,7 +151,7 @@ const strukturOrganisasi = {
                 'Success stories mahasiswa',
                 'Kolaborasi dengan UKM lain'
             ],
-            warna: 'from-purple-500 to-pink-600'
+            warna: 'primary'
         },
         {
             nama: 'Divisi Pendampingan & Liaison',
@@ -170,7 +170,7 @@ const strukturOrganisasi = {
                 'Bantu pembentukan tim',
                 'Koordinasi partisipasi kolektif'
             ],
-            warna: 'from-emerald-500 to-teal-600'
+            warna: 'primary'
         },
         {
             nama: 'Divisi Teknologi & Developer',
@@ -196,7 +196,7 @@ const strukturOrganisasi = {
                 'Maintenance & security',
                 'Training pengguna'
             ],
-            warna: 'from-cyan-500 to-blue-600'
+            warna: 'primary'
         },
     ]
 };
@@ -279,9 +279,9 @@ function DivisiCard({
     const IconComponent = divisi.icon;
     
     return (
-        <div className="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden hover:shadow-xl transition-shadow">
-            {/* Header */}
-            <div className={`bg-gradient-to-r ${divisi.warna} px-5 py-4`}>
+        <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden hover:shadow-md hover:border-primary/30 transition-all">
+            {/* Header - clean primary color */}
+            <div className="bg-primary px-5 py-4">
                 <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-lg bg-white/20 flex items-center justify-center">
                         <IconComponent className="w-5 h-5 text-white" />
@@ -294,32 +294,32 @@ function DivisiCard({
             </div>
 
             {/* Koordinator Divisi */}
-            <div className="p-5 border-b border-gray-100">
-                <p className="text-xs font-semibold text-gray-500 mb-3 uppercase tracking-wide">Koordinator</p>
+            <div className="p-5 border-b border-slate-100">
+                <p className="text-xs font-semibold text-slate-500 mb-3 uppercase tracking-wide">Koordinator</p>
                 <div className="flex items-center gap-4">
-                    <div className={`w-12 h-12 rounded-full bg-gradient-to-br ${divisi.warna} flex items-center justify-center text-white font-bold text-sm`}>
+                    <div className="w-12 h-12 rounded-full bg-primary flex items-center justify-center text-white font-bold text-sm">
                         {divisi.kepala.nama === 'Belum Ditentukan' ? '?' : divisi.kepala.nama.split(' ').map(n => n[0]).slice(0, 2).join('')}
                     </div>
                     <div>
-                        <h4 className="font-semibold text-gray-900">{divisi.kepala.nama}</h4>
-                        <p className="text-xs text-gray-500">{divisi.kepala.unit}</p>
+                        <h4 className="font-semibold text-slate-900">{divisi.kepala.nama}</h4>
+                        <p className="text-xs text-slate-500">{divisi.kepala.unit}</p>
                     </div>
                 </div>
             </div>
 
             {/* Anggota Tim (if any) */}
             {divisi.anggota && divisi.anggota.length > 0 && (
-                <div className="p-5 border-b border-gray-100 bg-gray-50/50">
-                    <p className="text-xs font-semibold text-gray-500 mb-3 uppercase tracking-wide">Tim</p>
+                <div className="p-5 border-b border-slate-100 bg-slate-50/50">
+                    <p className="text-xs font-semibold text-slate-500 mb-3 uppercase tracking-wide">Tim</p>
                     <div className="space-y-3">
                         {divisi.anggota.map((anggota, i) => (
                             <div key={i} className="flex items-center gap-3">
-                                <div className={`w-10 h-10 rounded-full bg-gradient-to-br ${divisi.warna} flex items-center justify-center text-white font-bold text-xs`}>
+                                <div className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center text-white font-bold text-xs">
                                     {anggota.nama.split(' ').map(n => n[0]).slice(0, 2).join('')}
                                 </div>
                                 <div>
-                                    <h5 className="font-medium text-gray-900 text-sm">{anggota.nama}</h5>
-                                    <p className="text-xs text-gray-500">{anggota.role}</p>
+                                    <h5 className="font-medium text-slate-900 text-sm">{anggota.nama}</h5>
+                                    <p className="text-xs text-slate-500">{anggota.role}</p>
                                 </div>
                             </div>
                         ))}
@@ -329,11 +329,11 @@ function DivisiCard({
 
             {/* Tugas */}
             <div className="p-5">
-                <p className="text-xs font-semibold text-gray-600 mb-3 uppercase tracking-wide">Tugas & Tanggung Jawab</p>
+                <p className="text-xs font-semibold text-slate-600 mb-3 uppercase tracking-wide">Tugas & Tanggung Jawab</p>
                 <ul className="space-y-2">
                     {divisi.tugas.map((t, i) => (
-                        <li key={i} className="text-sm text-gray-600 flex items-start gap-2">
-                            <Star className="w-4 h-4 text-amber-500 flex-shrink-0 mt-0.5" />
+                        <li key={i} className="text-sm text-slate-600 flex items-start gap-2">
+                            <Star className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
                             {t}
                         </li>
                     ))}
@@ -413,7 +413,7 @@ export default function StrukturOrganisasiPage() {
 
                 {/* Connector Line */}
                 <div className="flex justify-center mb-8">
-                    <div className="w-0.5 h-12 bg-gradient-to-b from-gray-400 to-primary"></div>
+                    <div className="w-0.5 h-12 bg-slate-300"></div>
                 </div>
 
                 {/* BPH (Badan Pengurus Harian) */}
@@ -457,23 +457,23 @@ export default function StrukturOrganisasiPage() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
                         {/* Sekretaris */}
                         <div className="text-center">
-                            <Badge variant="outline" className="mb-3 bg-blue-50 text-blue-700 border-blue-200">Sekretaris</Badge>
+                            <Badge variant="outline" className="mb-3 bg-primary/10 text-primary border-primary/30">Sekretaris</Badge>
                             <PersonCard
                                 {...strukturOrganisasi.bph.sekretaris}
                                 size="md"
                                 showTugas={true}
-                                gradient="from-blue-500 to-indigo-600"
+                                gradient="from-primary to-primary-600"
                             />
                         </div>
 
                         {/* Bendahara */}
                         <div className="text-center">
-                            <Badge variant="outline" className="mb-3 bg-emerald-50 text-emerald-700 border-emerald-200">Bendahara</Badge>
+                            <Badge variant="outline" className="mb-3 bg-primary/10 text-primary border-primary/30">Bendahara</Badge>
                             <PersonCard
                                 {...strukturOrganisasi.bph.bendahara}
                                 size="md"
                                 showTugas={true}
-                                gradient="from-emerald-500 to-teal-600"
+                                gradient="from-primary to-primary-600"
                             />
                         </div>
                     </div>
@@ -481,7 +481,7 @@ export default function StrukturOrganisasiPage() {
 
                 {/* Connector Line */}
                 <div className="flex justify-center mb-8">
-                    <div className="w-0.5 h-12 bg-gradient-to-b from-primary to-accent"></div>
+                    <div className="w-0.5 h-12 bg-slate-300"></div>
                 </div>
 
                 {/* Divisi Operasional Section */}
@@ -528,7 +528,7 @@ export default function StrukturOrganisasiPage() {
                 {/* Kelompok Relawan Section */}
                 <div className="mb-16">
                     <div className="text-center mb-8">
-                        <Badge variant="outline" className="mb-3 bg-rose-50 text-rose-700 border-rose-200">
+                        <Badge variant="outline" className="mb-3 bg-slate-100 text-slate-700 border-slate-300">
                             <Users className="w-3 h-3 mr-1" /> Kelompok Relawan
                         </Badge>
                         <h2 className="text-xl font-bold text-gray-900">KELOMPOK RELAWAN</h2>
@@ -537,29 +537,29 @@ export default function StrukturOrganisasiPage() {
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
                         {/* Relawan Card 1 */}
-                        <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-6 text-center hover:shadow-xl transition-shadow">
-                            <div className="w-16 h-16 rounded-full bg-gradient-to-br from-rose-400 to-pink-500 flex items-center justify-center mx-auto mb-4">
+                        <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 text-center hover:shadow-md hover:border-primary/30 transition-all">
+                            <div className="w-16 h-16 rounded-full bg-secondary flex items-center justify-center mx-auto mb-4">
                                 <Users className="w-8 h-8 text-white" />
                             </div>
-                            <h3 className="font-bold text-gray-900 mb-2">Relawan Event</h3>
-                            <p className="text-sm text-gray-600 mb-4">
+                            <h3 className="font-bold text-slate-900 mb-2">Relawan Event</h3>
+                            <p className="text-sm text-slate-600 mb-4">
                                 Membantu pelaksanaan event, lomba, dan kegiatan APM lainnya
                             </p>
-                            <Badge variant="outline" className="bg-rose-50 text-rose-600 border-rose-200">
+                            <Badge variant="outline" className="bg-primary/10 text-primary border-primary/30">
                                 Rekrutmen Terbuka
                             </Badge>
                         </div>
 
                         {/* Relawan Card 2 */}
-                        <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-6 text-center hover:shadow-xl transition-shadow">
-                            <div className="w-16 h-16 rounded-full bg-gradient-to-br from-purple-400 to-violet-500 flex items-center justify-center mx-auto mb-4">
+                        <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 text-center hover:shadow-md hover:border-primary/30 transition-all">
+                            <div className="w-16 h-16 rounded-full bg-primary flex items-center justify-center mx-auto mb-4">
                                 <Star className="w-8 h-8 text-white" />
                             </div>
-                            <h3 className="font-bold text-gray-900 mb-2">Relawan Mentor</h3>
-                            <p className="text-sm text-gray-600 mb-4">
+                            <h3 className="font-bold text-slate-900 mb-2">Relawan Mentor</h3>
+                            <p className="text-sm text-slate-600 mb-4">
                                 Pendampingan dan sharing pengalaman untuk peserta lomba
                             </p>
-                            <Badge variant="outline" className="bg-purple-50 text-purple-600 border-purple-200">
+                            <Badge variant="outline" className="bg-primary/10 text-primary border-primary/30">
                                 Rekrutmen Terbuka
                             </Badge>
                         </div>
